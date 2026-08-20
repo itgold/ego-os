@@ -1,0 +1,22 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import TableOfContents from '../components/TableOfContents.astro';
+
+const chapters = (await getCollection('chapters', ({ data }) => !data.draft))
+  .sort((a, b) => a.data.order - b.data.order);
+---
+
+<BaseLayout title="Ego OS" description="An illustrated digital book.">
+  <main id="main-content" class="home">
+    <h1>Ego OS</h1>
+    <p class="home__subtitle">[Placeholder subtitle]</p>
+    <div class="cover-placeholder" role="img" aria-label="Placeholder cover area for Ego OS">
+      [Placeholder cover area]
+    </div>
+    <div id="contents">
+      <TableOfContents {chapters} />
+    </div>
+    <a class="start-reading" href={`/chapters/${chapters[0].slug}/`}>Start reading</a>
+  </main>
+</BaseLayout>

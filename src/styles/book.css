@@ -1,0 +1,63 @@
+.book-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem var(--page-gutter);
+  border-bottom: 1px solid var(--color-rule);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+}
+
+.book-header__title { font-weight: 700; text-decoration: none; }
+.book-header__chapter { color: var(--color-muted); }
+
+.home, .chapter { padding: clamp(3rem, 10vw, 8rem) var(--page-gutter); }
+
+.home { max-width: calc(var(--content-width) + (var(--page-gutter) * 2)); }
+.home h1, .chapter h1 { margin: 0; font-size: clamp(3.5rem, 12vw, 7rem); line-height: 0.95; letter-spacing: -0.055em; }
+.home__subtitle, .chapter__description { color: var(--color-muted); }
+.home__subtitle { margin: 1.5rem 0 4rem; }
+
+.cover-placeholder {
+  display: grid;
+  min-height: min(70vw, 32rem);
+  place-items: center;
+  margin-bottom: 4rem;
+  border: 1px solid var(--color-rule);
+  color: var(--color-muted);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+}
+
+.table-of-contents h2 { font-family: var(--font-sans); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.08em; }
+.table-of-contents ol { margin: 1rem 0 3rem; padding: 0; list-style: none; border-top: 1px solid var(--color-rule); }
+.table-of-contents li { border-bottom: 1px solid var(--color-rule); }
+.table-of-contents a { display: grid; grid-template-columns: 3rem 1fr; gap: 1rem; padding: 1rem 0; text-decoration: none; }
+.table-of-contents__number, .eyebrow { color: var(--color-muted); font-family: var(--font-sans); font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; }
+.start-reading { font-family: var(--font-sans); font-weight: 700; }
+
+.chapter { max-width: var(--illustration-width); margin: 0 auto; }
+.chapter__header, .chapter__content > :not(.illustration), .chapter-navigation { max-width: var(--content-width); margin-right: auto; margin-left: auto; }
+.chapter__header { margin-bottom: 4rem; }
+.chapter__header h1 { margin: 0.5rem 0 1.5rem; font-size: clamp(2.8rem, 8vw, 5.5rem); }
+.chapter__description { margin: 0; }
+.chapter__content > * { margin-top: 0; margin-bottom: 1.75rem; }
+.chapter__content h2, .chapter__content h3 { font-family: var(--font-sans); line-height: 1.15; }
+.chapter__content h2 { margin-top: 3.5rem; font-size: 1.75rem; }
+.chapter__content h3 { margin-top: 2.5rem; font-size: 1.25rem; }
+.chapter__content blockquote { padding-left: 1.25rem; border-left: 2px solid var(--color-rule); color: var(--color-muted); }
+
+.illustration { width: 100%; margin: 3.5rem 0; }
+.illustration img { width: 100%; }
+.illustration figcaption { max-width: var(--content-width); margin: 0.75rem auto 0; color: var(--color-muted); font-family: var(--font-sans); font-size: 0.8rem; line-height: 1.5; }
+
+.chapter-navigation { margin-top: 5rem; padding-top: 1.5rem; border-top: 1px solid var(--color-rule); font-family: var(--font-sans); font-size: 0.9rem; }
+.chapter-navigation__contents { display: inline-block; margin-bottom: 1.5rem; }
+.chapter-navigation__links { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.chapter-navigation__links > :last-child { text-align: right; }
+
+@media (max-width: 36rem) {
+  .book-header { padding-top: 1rem; padding-bottom: 1rem; }
+  .chapter-navigation__links { grid-template-columns: 1fr; }
+  .chapter-navigation__links > :last-child { text-align: left; }
+}

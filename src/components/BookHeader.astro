@@ -1,0 +1,12 @@
+---
+interface Props {
+  currentChapter?: string;
+}
+
+const { currentChapter } = Astro.props;
+---
+
+<header class="book-header">
+  <a class="book-header__title" href="/" aria-label="Ego OS table of contents">Ego OS</a>
+  {currentChapter && <span class="book-header__chapter">{currentChapter}</span>}
+</header>

@@ -1,0 +1,30 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import BaseLayout from './BaseLayout.astro';
+import BookHeader from '../components/BookHeader.astro';
+import ChapterNavigation from '../components/ChapterNavigation.astro';
+
+interface Props {
+  chapter: CollectionEntry<'chapters'>;
+  previous?: CollectionEntry<'chapters'>;
+  next?: CollectionEntry<'chapters'>;
+}
+
+const { chapter, previous, next } = Astro.props;
+const chapterLabel = `Chapter ${String(chapter.data.chapterNumber).padStart(2, '0')}`;
+---
+
+<BaseLayout title={`${chapter.data.title} — Ego OS`} description={chapter.data.description}>
+  <BookHeader currentChapter={chapterLabel} />
+  <main id="main-content" class="chapter">
+    <header class="chapter__header">
+      <p class="eyebrow">{chapterLabel}</p>
+      <h1>{chapter.data.title}</h1>
+      <p class="chapter__description">{chapter.data.description}</p>
+    </header>
+    <article class="chapter__content">
+      <slot />
+    </article>
+    <ChapterNavigation {previous} {next} />
+  </main>
+</BaseLayout>
