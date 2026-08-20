@@ -1,22 +1,18 @@
 ---
-import { getCollection } from 'astro:content';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import TableOfContents from '../components/TableOfContents.astro';
-
-const chapters = (await getCollection('chapters', ({ data }) => !data.draft))
-  .sort((a, b) => a.data.order - b.data.order);
+import Header from '../components/Header.astro';
+import EgoTitle from '../components/EgoTitle.astro';
+import MindStructure from '../components/MindStructure.astro';
+import '../styles/homepage.css';
 ---
 
-<BaseLayout title="Ego OS" description="An illustrated digital book.">
-  <main id="main-content" class="home">
-    <h1>Ego OS</h1>
-    <p class="home__subtitle">[Placeholder subtitle]</p>
-    <div class="cover-placeholder" role="img" aria-label="Placeholder cover area for Ego OS">
-      [Placeholder cover area]
-    </div>
-    <div id="contents">
-      <TableOfContents {chapters} />
-    </div>
-    <a class="start-reading" href={`/chapters/${chapters[0].slug}/`}>Start reading</a>
-  </main>
+<BaseLayout title="Ego OS — An illustrated model of the mind" description="An interactive illustrated book about the systems that make us who we are.">
+  <div class="homepage-shell">
+    <Header />
+    <main id="main-content" class="homepage-main">
+      <EgoTitle />
+      <MindStructure />
+    </main>
+    <p class="edition-mark" aria-hidden="true">A field guide to the architecture of self · 2026</p>
+  </div>
 </BaseLayout>

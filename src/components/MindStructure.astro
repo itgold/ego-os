@@ -1,0 +1,82 @@
+---
+import { bookParts } from '../data/bookParts';
+import BookPartLayer from './BookPartLayer.astro';
+import FoundationsArtwork from './FoundationsArtwork.astro';
+import UnfoldControl from './UnfoldControl.astro';
+
+const layerOrder = [...bookParts].reverse();
+const extraLayers = [6, 7, 8].map((n) => ({
+  id: `part-0${n}`, number: `Layer ${n}`, title: '', href: '#',
+  asset: `/assets/home-layers/layer-0${n}-texture-stack.png`, mask: '',
+  color: '#53616a', labelY: '90%', chapters: [],
+}));
+---
+
+<section class="mind-structure" id="parts" aria-labelledby="structure-title" data-mind-structure>
+  <h2 id="structure-title" class="sr-only">The five parts of Ego OS</h2>
+
+  <div class="mind-structure__stack">
+    {extraLayers.map((part, index) => <BookPartLayer part={part} index={index + 5} />)}
+    {layerOrder.map((part) => (
+      <BookPartLayer part={part} index={bookParts.indexOf(part)}>
+        {part.active && (
+          <>
+            <img class="part-layer__stack-texture" src="/assets/home-layers/layer-01-texture.png" width="1163" height="853" alt="" aria-hidden="true" />
+            <div class="active-part-copy">
+              <span class="active-part-copy__rule" aria-hidden="true"></span>
+              <blockquote>To understand the self, begin with the system that builds it.</blockquote>
+            </div>
+            <FoundationsArtwork />
+          </>
+        )}
+      </BookPartLayer>
+    ))}
+  </div>
+
+  <UnfoldControl />
+
+  <ol class="depth-key" aria-label="Reading depth">
+    {bookParts.map((part) => (
+      <li aria-current={part.active ? 'step' : undefined}>
+        <a href={part.href}><span>{`${part.number} — `}</span><span>{part.title}</span></a>
+      </li>
+    ))}
+  </ol>
+</section>
+
+<script>
+  const structure = document.querySelector<HTMLElement>('[data-mind-structure]');
+  const control = document.querySelector<HTMLAnchorElement>('[data-unfold-control]');
+
+  if (structure && control) {
+    control.addEventListener('click', (event) => {
+      event.preventDefault();
+      const isOpen = structure.classList.toggle('is-unfolded');
+      control.setAttribute('aria-expanded', String(isOpen));
+      structure.dataset.state = isOpen ? 'unfolded' : 'folded';
+    });
+  }
+
+  // Swap each layer's texture only on an explicit click.
+  const clickStack = structure?.querySelector<HTMLElement>('.mind-structure__stack');
+  const clickCanvas = document.createElement('canvas');
+  const clickContext = clickCanvas.getContext('2d', { willReadFrequently: true });
+  clickStack?.addEventListener('click', (event) => {
+    if (!clickContext) return;
+    const layers = [...(structure?.querySelectorAll<HTMLElement>('.part-layer[data-part]') ?? [])]
+      .sort((a, b) => Number.parseInt(getComputedStyle(b).zIndex || '0') - Number.parseInt(getComputedStyle(a).zIndex || '0'));
+    const hit = layers.find((layer) => {
+      const image = layer.querySelector<HTMLImageElement>('.part-layer__stack-texture, .part-layer__texture');
+      if (!image?.complete || !image.naturalWidth) return false;
+      const box = image.getBoundingClientRect();
+      if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) return false;
+      clickCanvas.width = image.naturalWidth; clickCanvas.height = image.naturalHeight;
+      clickContext.clearRect(0, 0, clickCanvas.width, clickCanvas.height); clickContext.drawImage(image, 0, 0);
+      const x = Math.floor((event.clientX - box.left) * image.naturalWidth / box.width);
+      const y = Math.floor((event.clientY - box.top) * image.naturalHeight / box.height);
+      return clickContext.getImageData(x, y, 1, 1).data[3] > 24;
+    });
+    hit?.classList.toggle('is-image-swapped');
+  });
+
+</script>

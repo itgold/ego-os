@@ -1,0 +1,43 @@
+---
+import type { BookPart } from '../data/bookParts';
+
+interface Props {
+  part: BookPart;
+  index: number;
+}
+
+const { part, index } = Astro.props;
+const style = `--part-index: ${index}; --part-color: ${part.color}; --label-y: ${part.labelY}; --part-mask: url('${part.mask}')`;
+const stackAsset = part.asset.replace('-texture-stack.png', '-texture.png');
+---
+
+<article
+  class:list={['part-layer', { 'part-layer--active': part.active }]}
+  id={part.id}
+  data-part={part.id}
+  style={style}
+  aria-current={part.active ? 'page' : undefined}
+>
+  <div class="part-layer__surface" id={part.active ? 'active-part-surface' : undefined}>
+    <div class="part-layer__content">
+      <img
+        class="part-layer__texture"
+        src={part.asset}
+        width="1163"
+        height="853"
+        alt=""
+        loading={part.active ? 'eager' : 'lazy'}
+      />
+      {part.id !== 'part-01' && (
+        <img class="part-layer__stack-texture" src={stackAsset} width="1163" height="853" alt="" aria-hidden="true" />
+      )}
+      <slot />
+    </div>
+  </div>
+  <button class="part-layer__hit" type="button" aria-label={`Toggle ${part.number} ${part.title}`}></button>
+  <a class="part-layer__label" href={part.href}>
+    <span class="part-layer__rule" aria-hidden="true"></span>
+    <span class="part-layer__number">{part.number}<span class="part-layer__separator" aria-hidden="true"> — </span></span>
+    <span class="part-layer__title">{part.title}</span>
+  </a>
+</article>

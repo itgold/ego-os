@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1163 853" fill="none">
+  <style>
+    .signal-pulse {
+      stroke-dasharray: 2 98;
+      stroke-dashoffset: 100;
+      animation: signal-travel 9s linear infinite;
+    }
+    .signal-pulse:nth-child(2) { animation-delay: -3.2s; animation-duration: 11s; }
+    .signal-pulse:nth-child(3) { animation-delay: -6.4s; animation-duration: 13s; }
+    .signal-pulse:nth-child(4) { animation-delay: -1.8s; animation-duration: 10s; }
+    @keyframes signal-travel {
+      0%, 14% { stroke-dashoffset: 100; opacity: 0; }
+      18% { opacity: .95; }
+      46% { opacity: .78; }
+      52%, 100% { stroke-dashoffset: 0; opacity: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .signal-pulse { animation: none; opacity: 0; }
+    }
+  </style>
+  <defs>
+    <clipPath id="layer-01-silhouette">
+      <path d="M962 0c23 33 54 55 72 88 18 32 21 71 49 91 22 16 55 18 69 42 15 26-3 51-24 70-25 23-55 24-86 31-43 10-61 31-83 67-27 45-40 95-58 145-16 45-38 85-73 116-39 35-89 48-130 79-35 27-66 64-109 75-39 10-80-5-118 9-43 15-72 56-113 70-45 15-88-7-126-30-35-21-71-40-93-74-21-33-16-76-38-106-25-34-71-49-91-87-18-34-4-75-12-112-9-44-44-77-35-127 7-45 29-85 66-112 39-28 86-39 133-44 53-6 106-1 158-13 66-15 110-65 174-78 71-14 139 20 208 12 65-8 121-49 181-63 58-14 112-31 151-67Z"/>
+    </clipPath>
+    <filter id="soft-node" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="1.15"/>
+    </filter>
+  </defs>
+
+  <g clip-path="url(#layer-01-silhouette)" stroke="#fffdf6" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Distant mountain ridges: fine, quiet links. -->
+    <g opacity=".24" stroke-width=".85">
+      <path d="M58 513 131 466 208 438 280 401 352 422 432 359 507 390 572 343 646 385 716 330 792 367 866 310 948 337"/>
+      <path d="M81 565 158 525 237 502 315 455 386 483 462 423 536 447 608 397 681 429 755 383 829 410 907 361"/>
+      <path d="m208 438 29 64m43-101 35 54m37-33 34 61m46-124 30 64m45-33 29 57m36-104 36 54m38-12 35 44m35-99 39 53m37-16 36 43m37-100 41 51"/>
+    </g>
+
+    <!-- Mid-ground mountain network. -->
+    <g opacity=".38" stroke-width="1.05">
+      <path d="M19 611 96 576 178 555 258 518 336 546 409 491 482 525 553 468 626 503 700 448 775 481 851 425"/>
+      <path d="M53 661 137 630 218 606 300 575 381 599 458 548 532 578 605 531 680 557 756 511"/>
+      <path d="m96 576 41 54m41-75 40 51m40-88 42 57m36-29 45 53m28-108 49 57m24-23 50 53m21-110 42 63m21-28 54 54m20-109 56 63"/>
+    </g>
+
+    <!-- Road and sand network: larger links follow the perspective corridor. -->
+    <g opacity=".56" stroke-width="1.35">
+      <path d="M248 838C335 790 405 761 479 736c72-24 111-50 130-84 16-28 13-55 46-69 33-15 72 0 111-20 29-15 53-41 78-76"/>
+      <path d="M357 850C424 803 480 782 536 759c64-26 111-58 124-96 10-29-2-51 28-67 29-15 68-3 104-27 25-17 44-43 63-75"/>
+      <path d="M188 756 286 728 382 704 479 736 536 759 609 652 660 663 688 596 766 563 792 569 844 487 855 494"/>
+      <path d="m286 728 71 122m25-146-25 146m122-114 57 23m73-107 51 11m28-67 104-27m-26-6 78-76"/>
+    </g>
+
+    <!-- Perspective links converge on the beacon. -->
+    <g opacity=".12" stroke-width=".8">
+      <path d="M248 838C423 690 588 505 734 151"/>
+      <path d="M609 652C665 500 708 329 734 151"/>
+      <path d="M855 494C798 374 757 257 734 151"/>
+    </g>
+
+    <!-- Fine neural mesh, echoing the organic white network in the reference. -->
+    <g opacity=".5" stroke-width=".72">
+      <path d="M41 733C112 696 164 702 223 672s103-80 164-67 89 59 149 37 92-86 157-91 104 43 169 8 105-94 168-115"/>
+      <path d="M73 787C147 746 211 756 270 721s99-85 158-76 91 61 150 35 89-90 153-91 101 52 163 18"/>
+      <path d="M118 645C184 608 244 627 297 588s86-93 147-82 92 65 153 37 88-101 153-97 102 57 158 21"/>
+      <path d="M156 574C221 541 268 555 320 518s82-84 139-76 88 56 143 34 86-86 145-82 94 48 149 14"/>
+      <path d="M224 491C274 459 319 470 365 437s73-72 124-65 75 47 125 27 75-70 129-67 84 38 133 8"/>
+      <path d="M99 700c43-7 71 7 96 36m28-64c26 18 38 33 47 49m27-133c29 20 39 38 44 57m46-40c25 16 32 25 41 40m16-139c30 22 40 44 46 67m47-30c26 15 34 25 41 37m19-134c25 17 34 30 40 47m33-47c25 14 35 28 41 43m29-107c21 14 30 28 34 42"/>
+      <path d="M270 721c29-6 58 2 85 22m73-98c31-3 54 4 78 21m72 14c29-8 56-4 80 12m73-103c30-1 53 8 76 27m57-9c26-10 53-9 78 5"/>
+    </g>
+
+    <g fill="#fffdf6" stroke="none" opacity=".78">
+      <circle cx="99" cy="700" r="2.3"/><circle cx="195" cy="736" r="2.1"/><circle cx="223" cy="672" r="2.5"/>
+      <circle cx="297" cy="588" r="2.2"/><circle cx="341" cy="645" r="2.4"/><circle cx="387" cy="605" r="2.3"/>
+      <circle cx="444" cy="506" r="2"/><circle cx="490" cy="573" r="2.2"/><circle cx="536" cy="642" r="2.6"/>
+      <circle cx="597" cy="543" r="2.1"/><circle cx="637" cy="493" r="2"/><circle cx="693" cy="551" r="2.4"/>
+      <circle cx="747" cy="394" r="1.8"/><circle cx="787" cy="446" r="2.1"/><circle cx="862" cy="559" r="2.5"/>
+      <circle cx="896" cy="408" r="1.9"/><circle cx="930" cy="507" r="2.2"/><circle cx="1030" cy="444" r="2"/>
+      <circle cx="270" cy="721" r="2.2"/><circle cx="355" cy="743" r="2.4"/><circle cx="428" cy="645" r="2.1"/>
+      <circle cx="506" cy="666" r="2.2"/><circle cx="578" cy="680" r="2.5"/><circle cx="658" cy="692" r="2.6"/>
+      <circle cx="731" cy="589" r="2.1"/><circle cx="807" cy="616" r="2.3"/><circle cx="894" cy="607" r="2.4"/>
+    </g>
+
+    <!-- Intermittent electrical impulses moving through selected terrain paths. -->
+    <g fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round">
+      <path class="signal-pulse" pathLength="100" d="M248 838C335 790 405 761 479 736c72-24 111-50 130-84 16-28 13-55 46-69 33-15 72 0 111-20 29-15 53-41 78-76"/>
+      <path class="signal-pulse" pathLength="100" d="M118 645C184 608 244 627 297 588s86-93 147-82 92 65 153 37 88-101 153-97 102 57 158 21"/>
+      <path class="signal-pulse" pathLength="100" d="M224 491C274 459 319 470 365 437s73-72 124-65 75 47 125 27 75-70 129-67 84 38 133 8"/>
+      <path class="signal-pulse" pathLength="100" d="M609 652C665 500 708 329 734 151"/>
+    </g>
+
+    <!-- Nodes scale down with distance to suggest depth. -->
+    <g fill="#fffdf6" stroke="none">
+      <g opacity=".82">
+        <circle cx="248" cy="838" r="4.2"/><circle cx="357" cy="850" r="4"/>
+        <circle cx="286" cy="728" r="3.9"/><circle cx="382" cy="704" r="3.8"/>
+        <circle cx="479" cy="736" r="3.7"/><circle cx="536" cy="759" r="3.6"/>
+      </g>
+      <g opacity=".72">
+        <circle cx="609" cy="652" r="3.3"/><circle cx="660" cy="663" r="3.2"/>
+        <circle cx="688" cy="596" r="3"/><circle cx="766" cy="563" r="2.9"/>
+        <circle cx="792" cy="569" r="2.8"/><circle cx="844" cy="487" r="2.7"/>
+      </g>
+      <g opacity=".65">
+        <circle cx="96" cy="576" r="3"/><circle cx="178" cy="555" r="2.9"/>
+        <circle cx="258" cy="518" r="2.8"/><circle cx="336" cy="546" r="2.7"/>
+        <circle cx="409" cy="491" r="2.6"/><circle cx="482" cy="525" r="2.5"/>
+        <circle cx="553" cy="468" r="2.4"/><circle cx="626" cy="503" r="2.3"/>
+        <circle cx="700" cy="448" r="2.2"/><circle cx="775" cy="481" r="2.1"/>
+      </g>
+      <g opacity=".46">
+        <circle cx="208" cy="438" r="1.9"/><circle cx="352" cy="422" r="1.8"/>
+        <circle cx="507" cy="390" r="1.7"/><circle cx="646" cy="385" r="1.6"/>
+        <circle cx="792" cy="367" r="1.5"/><circle cx="948" cy="337" r="1.4"/>
+      </g>
+      <circle cx="734" cy="151" r="5" opacity=".8"/>
+      <circle cx="734" cy="151" r="10" opacity=".2" filter="url(#soft-node)"/>
+    </g>
+  </g>
+</svg>

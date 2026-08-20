@@ -56,6 +56,20 @@
 .chapter-navigation__links { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 .chapter-navigation__links > :last-child { text-align: right; }
 
+.part-overview {
+  width: min(100% - (var(--page-gutter) * 2), 58rem);
+  margin: 0 auto;
+  padding: clamp(4rem, 10vw, 8rem) 0;
+}
+
+.part-overview__back { font-family: var(--font-sans); font-size: .8rem; text-transform: uppercase; letter-spacing: .08em; }
+.part-overview h1 { max-width: 12ch; margin: .4rem 0 1.5rem; font-size: clamp(3.5rem, 9vw, 7rem); line-height: .92; letter-spacing: -.055em; }
+.part-overview__intro { max-width: 36rem; color: var(--color-muted); }
+.part-overview ol { margin: 4rem 0 0; padding: 0; list-style: none; border-top: 1px solid var(--color-rule); }
+.part-overview li { display: grid; grid-template-columns: 4rem 1fr; align-items: baseline; gap: 1rem; padding: 1.25rem 0; border-bottom: 1px solid var(--color-rule); }
+.part-overview li > span { color: var(--color-muted); font-family: var(--font-sans); font-size: .75rem; }
+.part-overview h2 { margin: 0; font-size: clamp(1.4rem, 3vw, 2.15rem); font-weight: 400; }
+
 @media (max-width: 36rem) {
   .book-header { padding-top: 1rem; padding-bottom: 1rem; }
   .chapter-navigation__links { grid-template-columns: 1fr; }
