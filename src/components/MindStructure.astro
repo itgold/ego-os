@@ -38,7 +38,7 @@ const extraLayers = [6, 7, 8].map((n) => ({
 
   <ol class="depth-key" aria-label="Reading depth">
     {bookParts.map((part) => (
-      <li aria-current={part.active ? 'step' : undefined}>
+      <li aria-current={part.defaultLayer ? 'step' : undefined}>
         <a href={part.href}><span>{`${part.number} — `}</span><span>{part.title}</span></a>
       </li>
     ))}
@@ -62,12 +62,26 @@ const extraLayers = [6, 7, 8].map((n) => ({
   const clickStack = structure?.querySelector<HTMLElement>('.mind-structure__stack');
   const clickCanvas = document.createElement('canvas');
   const clickContext = clickCanvas.getContext('2d', { willReadFrequently: true });
+
+  // Layers currently hidden by folding, restored in reverse order.
   let layersStack: HTMLElement[] = [];
+
+  // Timer controlling the next sequential fold step.
   let stackTimer: number | undefined;
+
+  // Generation token that invalidates stale folding callbacks.
   let stackRun = 0;
+
+  // Generation token that invalidates stale unfolding callbacks.
   let unfoldRun = 0;
+
+  // Resolve the visual layer order from z-index before hit testing.
   function stackFolding(event: MouseEvent) {
+    // Folding starts from the layer the pointer actually hit. Upper layers
+    // are queued in depth order and hidden one at a time.
     if (!clickContext) return;
+
+    // Search topmost-to-bottommost for the pixel under the pointer.
     const layers = [...(structure?.querySelectorAll<HTMLElement>('.part-layer[data-part]') ?? [])]
       .sort((a, b) => Number.parseInt(getComputedStyle(b).zIndex || '0') - Number.parseInt(getComputedStyle(a).zIndex || '0'));
     const hit = layers.find((layer) => {
@@ -81,12 +95,14 @@ const extraLayers = [6, 7, 8].map((n) => ({
       const y = Math.floor((event.clientY - box.top) * image.naturalHeight / box.height);
       return clickContext.getImageData(x, y, 1, 1).data[3] > 24;
     });
+    // Transparent pixels are ignored, so a click can fall through to a lower
+    // silhouette instead of always selecting the top image rectangle.
     if (!hit) return;
     unfoldRun += 1;
     const run = ++stackRun;
-    if (!hit.classList.contains('part-layer--active')) structure.querySelector<HTMLElement>('.part-layer--active')?.classList.remove('is-active');
-    hit.classList.add('is-active');
     const clickedDepth = Number(hit.dataset.part?.replace('part-', ''));
+    // Only currently visible layers above the clicked depth are candidates;
+    // already hidden layers remain in layersStack and are not duplicated.
     const ordered = layers
       .filter((layer) => {
         const depth = Number(layer.dataset.part?.replace('part-', ''));
@@ -95,29 +111,52 @@ const extraLayers = [6, 7, 8].map((n) => ({
       })
       .sort((a, b) => Number(a.dataset.part?.replace('part-', '')) - Number(b.dataset.part?.replace('part-', '')));
     const hideNext = () => {
+      // Each invocation handles exactly one layer; the next invocation is
+      // scheduled only after the current layer has begun its transition.
       if (run !== stackRun) return;
       const next = ordered.shift();
-      if (!next) return;
-      layersStack.push(next);
-      next.classList.remove('is-active');
-      next.classList.add('is-obscured');
-      stackTimer = window.setTimeout(hideNext, 1000);
+      if (!next) {
+        // No upper layers remain; activate the clicked layer immediately.
+        if (layersStack.length === 0) hit.classList.add('is-active');
+      } else {
+        // Persist this layer so an outside click can restore it later.
+        layersStack.push(next);
+        const nextDepth = Number(next.dataset.part?.replace('part-', ''));
+      // The clicked layer becomes active exactly when its immediate covering
+      // layer is folded away. If nothing covers it, activate it immediately.
+      if (nextDepth === clickedDepth - 1) hit.classList.add('is-active');
+        // The layer is now hidden and no longer active.
+        next.classList.remove('is-active');
+        next.classList.add('is-obscured');
+        stackTimer = window.setTimeout(hideNext, 1000);
+      }
     };
     hideNext();
   }
   clickStack?.addEventListener('click', stackFolding);
 
   function stackUnfolding(event: MouseEvent) {
+    // Unfolding cancels the current folding run, then restores queued layers
+    // from nearest to farthest so the stack state changes predictably.
+    // Clicks inside the stack belong to folding; only an outside click starts
+    // unfolding, preventing the two state machines from fighting each other.
     if (!structure || clickStack?.contains(event.target as Node)) return;
     const run = ++unfoldRun;
+
+    // Unfolding starts from the current active state, not the default state.
+    structure.querySelectorAll<HTMLElement>('.part-layer.is-active').forEach((layer) => layer.classList.remove('is-active'));
     // Invalidate the active folding run so it can no longer mutate the stack.
     stackRun += 1;
+
     // Cancel any pending folding step before unfolding the next queued layer.
+    // Invalidate both pending timers and callback generations before popping
+    // anything, so an old folding loop cannot mutate the restored state.
     if (stackTimer) {
       window.clearTimeout(stackTimer);
       stackTimer = undefined;
     }
     const restoreNext = () => {
+      // Pop and reveal one layer, then continue after its one-second reveal.
       if (run !== unfoldRun) return;
       const layer = layersStack.pop();
       if (!layer) return;
