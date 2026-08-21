@@ -1,5 +1,6 @@
 ---
 import type { BookPart } from '../data/bookParts';
+import { Image } from 'astro:assets';
 
 interface Props {
   part: BookPart;
@@ -12,24 +13,25 @@ const stackAsset = part.asset.replace('-texture-stack.png', '-texture.png');
 ---
 
 <article
-  class:list={['part-layer', { 'part-layer--active': part.active }]}
+  class:list={['part-layer', { 'part-layer--active': part.defaultLayer }]}
   id={part.id}
   data-part={part.id}
   style={style}
-  aria-current={part.active ? 'page' : undefined}
+  aria-current={part.defaultLayer ? 'page' : undefined}
 >
-  <div class="part-layer__surface" id={part.active ? 'active-part-surface' : undefined}>
+  <div class="part-layer__surface" id={part.defaultLayer ? 'active-part-surface' : undefined}>
+    {(['part-01', 'part-02', 'part-03', 'part-04', 'part-05', 'part-06', 'part-07', 'part-08'].includes(part.id)) && <svg class="part-layer__alpha-shadow" viewBox="0 0 1163 853" aria-hidden="true"><defs><filter id={`alpha-shadow-${part.id}`} x="-35%" y="-35%" width="170%" height="190%"><feGaussianBlur in="SourceAlpha" stdDeviation="18" result="blur"/><feOffset in="blur" dx="8" dy="18" result="offset"/><feFlood flood-color="#000000" flood-opacity=".60" result="color"/><feComposite in="color" in2="offset" operator="in"/></filter></defs><image href={part.asset} width="1163" height="853" filter={`url(#alpha-shadow-${part.id})`} /></svg>}
     <div class="part-layer__content">
-      <img
+      <Image
         class="part-layer__texture"
         src={part.asset}
         width="1163"
         height="853"
         alt=""
-        loading={part.active ? 'eager' : 'lazy'}
+        loading="eager"
       />
       {part.id !== 'part-01' && (
-        <img class="part-layer__stack-texture" src={stackAsset} width="1163" height="853" alt="" aria-hidden="true" />
+        <Image class="part-layer__stack-texture" src={stackAsset} width={1163} height={853} alt="" aria-hidden="true" loading="eager" />
       )}
       <slot />
     </div>

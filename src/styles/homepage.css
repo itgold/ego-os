@@ -172,7 +172,6 @@ body:has(.homepage-shell) {
   inset: 0;
   pointer-events: none;
   transform: none;
-  filter: drop-shadow(0 18px 28px rgb(41 32 25 / .13));
   transition: none;
 }
 
@@ -214,10 +213,12 @@ body:has(.homepage-shell) {
 .part-layer__surface {
   position: absolute;
   inset: 0;
-  filter: drop-shadow(0 4px 6px rgb(41 32 25 / .09));
   transform-origin: 78% 17%;
   transition: none;
 }
+.part-layer--active::before { display:none; }
+.part-layer__alpha-shadow { position:absolute; z-index:0; inset:0; width:100%; height:100%; overflow:visible; pointer-events:none; }
+.part-layer--active .part-layer__surface { z-index:1; }
 
 .part-layer__content { position: absolute; inset: 0; transition: transform var(--duration-paper) var(--ease-paper); }
 .part-layer__hit { display: none; }
@@ -228,12 +229,13 @@ body:has(.homepage-shell) {
   object-fit: contain;
   object-position: center;
   pointer-events: none;
-  transition: opacity 5000ms cubic-bezier(.22, .62, .24, 1);
+  transition: opacity 1000ms cubic-bezier(.22, .61, .36, 1), transform 1000ms cubic-bezier(.22, .61, .36, 1);
 }
 
-.part-layer__stack-texture { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; pointer-events: none; transition: opacity 5000ms cubic-bezier(.22, .62, .24, 1); }
-.part-layer.is-image-swapped .part-layer__stack-texture { opacity: 1; }
-.part-layer.is-image-swapped .part-layer__texture { opacity: 0; }
+.part-layer__stack-texture { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; pointer-events: none; transform: translateY(2px); transition: opacity 1000ms cubic-bezier(.22, .61, .36, 1), transform 1000ms cubic-bezier(.22, .61, .36, 1); }
+.part-layer.is-active .part-layer__stack-texture { opacity: 1; }
+.part-layer.is-active .part-layer__texture { opacity: 0; transform: translateY(-2px); }
+.part-layer.is-active .part-layer__stack-texture { transform: translateY(0); }
 
 .part-layer__label {
   position: absolute;
@@ -438,7 +440,7 @@ body:has(.homepage-shell) {
   .part-layer[data-part='part-02'] { top: 9rem; z-index: 5; }
   .part-layer--active { top: 0; z-index: 7; height: 22.5rem; }
 
-  .part-layer__surface { inset: 0; filter: drop-shadow(0 3px 5px rgb(59 43 31 / .08)); }
+  .part-layer__surface { inset: 0; }
   .part-layer:not(.part-layer--active) .part-layer__surface { overflow: visible; background: var(--part-color); }
   .part-layer:not(.part-layer--active) .part-layer__texture { position: absolute; width: 100%; height: 100%; max-width: none; inset: 0; object-fit: contain; opacity: .72; }
   .part-layer--active .part-layer__texture { width: 168%; height: 100%; max-width: none; transform: translateX(-15%); object-fit: contain; }

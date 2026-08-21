@@ -7,7 +7,7 @@ export interface BookPart {
   mask: string;
   color: string;
   labelY: string;
-  active?: boolean;
+  defaultLayer?: boolean;
   chapters: string[];
 }
 
@@ -21,7 +21,7 @@ export const bookParts: BookPart[] = [
     mask: '/assets/masks/part-01-mask.svg',
     color: '#eee4d2',
     labelY: '31%',
-    active: true,
+    defaultLayer: true,
     chapters: [
       'Brain Is a Computer',
       'Ego Is the Mind',

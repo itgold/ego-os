@@ -3,6 +3,7 @@ import { bookParts } from '../data/bookParts';
 import BookPartLayer from './BookPartLayer.astro';
 import FoundationsArtwork from './FoundationsArtwork.astro';
 import UnfoldControl from './UnfoldControl.astro';
+import { Image } from 'astro:assets';
 
 const layerOrder = [...bookParts].reverse();
 const extraLayers = [6, 7, 8].map((n) => ({
@@ -19,9 +20,9 @@ const extraLayers = [6, 7, 8].map((n) => ({
     {extraLayers.map((part, index) => <BookPartLayer part={part} index={index + 5} />)}
     {layerOrder.map((part) => (
       <BookPartLayer part={part} index={bookParts.indexOf(part)}>
-        {part.active && (
+        {part.defaultLayer && (
           <>
-            <img class="part-layer__stack-texture" src="/assets/home-layers/layer-01-texture.png" width="1163" height="853" alt="" aria-hidden="true" />
+            <Image class="part-layer__stack-texture" src="/assets/home-layers/layer-01-texture.png" width={1163} height={853} alt="" aria-hidden="true" loading="eager" />
             <div class="active-part-copy">
               <span class="active-part-copy__rule" aria-hidden="true"></span>
               <blockquote>To understand the self, begin with the system that builds it.</blockquote>
@@ -83,8 +84,9 @@ const extraLayers = [6, 7, 8].map((n) => ({
     if (!hit) return;
     unfoldRun += 1;
     const run = ++stackRun;
+    if (!hit.classList.contains('part-layer--active')) structure.querySelector<HTMLElement>('.part-layer--active')?.classList.remove('is-active');
+    hit.classList.add('is-active');
     const clickedDepth = Number(hit.dataset.part?.replace('part-', ''));
-    const swapClickedLayer = () => hit.classList.add('is-image-swapped');
     const ordered = layers
       .filter((layer) => {
         const depth = Number(layer.dataset.part?.replace('part-', ''));
@@ -95,8 +97,9 @@ const extraLayers = [6, 7, 8].map((n) => ({
     const hideNext = () => {
       if (run !== stackRun) return;
       const next = ordered.shift();
-      if (!next) { swapClickedLayer(); return; }
+      if (!next) return;
       layersStack.push(next);
+      next.classList.remove('is-active');
       next.classList.add('is-obscured');
       stackTimer = window.setTimeout(hideNext, 1000);
     };
@@ -114,13 +117,12 @@ const extraLayers = [6, 7, 8].map((n) => ({
       window.clearTimeout(stackTimer);
       stackTimer = undefined;
     }
-    structure.querySelector<HTMLElement>('.part-layer.is-image-swapped')?.classList.remove('is-image-swapped');
     const restoreNext = () => {
       if (run !== unfoldRun) return;
       const layer = layersStack.pop();
       if (!layer) return;
       layer.classList.add('is-restoring');
-      layer.classList.remove('is-image-swapped');
+      layer.classList.remove('is-active');
       layer.classList.remove('is-obscured');
       window.setTimeout(() => {
         layer.classList.remove('is-restoring');
