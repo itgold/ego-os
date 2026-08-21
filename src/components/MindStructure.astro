@@ -61,7 +61,11 @@ const extraLayers = [6, 7, 8].map((n) => ({
   const clickStack = structure?.querySelector<HTMLElement>('.mind-structure__stack');
   const clickCanvas = document.createElement('canvas');
   const clickContext = clickCanvas.getContext('2d', { willReadFrequently: true });
-  clickStack?.addEventListener('click', (event) => {
+  let layersStack: HTMLElement[] = [];
+  let stackTimer: number | undefined;
+  let stackRun = 0;
+  let unfoldRun = 0;
+  function stackFolding(event: MouseEvent) {
     if (!clickContext) return;
     const layers = [...(structure?.querySelectorAll<HTMLElement>('.part-layer[data-part]') ?? [])]
       .sort((a, b) => Number.parseInt(getComputedStyle(b).zIndex || '0') - Number.parseInt(getComputedStyle(a).zIndex || '0'));
@@ -76,7 +80,55 @@ const extraLayers = [6, 7, 8].map((n) => ({
       const y = Math.floor((event.clientY - box.top) * image.naturalHeight / box.height);
       return clickContext.getImageData(x, y, 1, 1).data[3] > 24;
     });
-    hit?.classList.toggle('is-image-swapped');
-  });
+    if (!hit) return;
+    unfoldRun += 1;
+    const run = ++stackRun;
+    const clickedDepth = Number(hit.dataset.part?.replace('part-', ''));
+    const swapClickedLayer = () => hit.classList.add('is-image-swapped');
+    const ordered = layers
+      .filter((layer) => {
+        const depth = Number(layer.dataset.part?.replace('part-', ''));
+        const visible = getComputedStyle(layer).opacity !== '0' && !layer.classList.contains('is-obscured');
+        return depth < clickedDepth && visible;
+      })
+      .sort((a, b) => Number(a.dataset.part?.replace('part-', '')) - Number(b.dataset.part?.replace('part-', '')));
+    const hideNext = () => {
+      if (run !== stackRun) return;
+      const next = ordered.shift();
+      if (!next) { swapClickedLayer(); return; }
+      layersStack.push(next);
+      next.classList.add('is-obscured');
+      stackTimer = window.setTimeout(hideNext, 1000);
+    };
+    hideNext();
+  }
+  clickStack?.addEventListener('click', stackFolding);
+
+  function stackUnfolding(event: MouseEvent) {
+    if (!structure || clickStack?.contains(event.target as Node)) return;
+    const run = ++unfoldRun;
+    // Invalidate the active folding run so it can no longer mutate the stack.
+    stackRun += 1;
+    // Cancel any pending folding step before unfolding the next queued layer.
+    if (stackTimer) {
+      window.clearTimeout(stackTimer);
+      stackTimer = undefined;
+    }
+    structure.querySelector<HTMLElement>('.part-layer.is-image-swapped')?.classList.remove('is-image-swapped');
+    const restoreNext = () => {
+      if (run !== unfoldRun) return;
+      const layer = layersStack.pop();
+      if (!layer) return;
+      layer.classList.add('is-restoring');
+      layer.classList.remove('is-image-swapped');
+      layer.classList.remove('is-obscured');
+      window.setTimeout(() => {
+        layer.classList.remove('is-restoring');
+        restoreNext();
+      }, 1000);
+    };
+    restoreNext();
+  }
+  document.addEventListener('click', stackUnfolding);
 
 </script>
