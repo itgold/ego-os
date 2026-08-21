@@ -49,13 +49,12 @@ const extraLayers = [6, 7, 8].map((n) => ({
   const structure = document.querySelector<HTMLElement>('[data-mind-structure]');
   const control = document.querySelector<HTMLAnchorElement>('[data-unfold-control]');
 
-  if (structure && control) {
-    control.addEventListener('click', (event) => {
+  function toggleControl(event: MouseEvent) {
+    if (!structure || !control) return;
       event.preventDefault();
       const isOpen = structure.classList.toggle('is-unfolded');
       control.setAttribute('aria-expanded', String(isOpen));
       structure.dataset.state = isOpen ? 'unfolded' : 'folded';
-    });
   }
 
   // Swap each layer's texture only on an explicit click.
@@ -77,6 +76,7 @@ const extraLayers = [6, 7, 8].map((n) => ({
 
   // Resolve the visual layer order from z-index before hit testing.
   function stackFolding(event: MouseEvent) {
+    //# Begin folding from the pixel-accurate clicked layer.
     // Folding starts from the layer the pointer actually hit. Upper layers
     // are queued in depth order and hidden one at a time.
     if (!clickContext) return;
@@ -93,13 +93,17 @@ const extraLayers = [6, 7, 8].map((n) => ({
       clickContext.clearRect(0, 0, clickCanvas.width, clickCanvas.height); clickContext.drawImage(image, 0, 0);
       const x = Math.floor((event.clientX - box.left) * image.naturalWidth / box.width);
       const y = Math.floor((event.clientY - box.top) * image.naturalHeight / box.height);
-      return clickContext.getImageData(x, y, 1, 1).data[3] > 24;
+      // Require a strongly opaque pixel so antialiased edges and transparent
+      // padding do not create oversized click regions.
+      return clickContext.getImageData(x, y, 1, 1).data[3] > 180;
     });
     // Transparent pixels are ignored, so a click can fall through to a lower
     // silhouette instead of always selecting the top image rectangle.
+    //# Abort when the pointer is outside every visible silhouette.
     if (!hit) return;
     unfoldRun += 1;
     const run = ++stackRun;
+    //# Determine which layers sit above the clicked depth.
     const clickedDepth = Number(hit.dataset.part?.replace('part-', ''));
     // Only currently visible layers above the clicked depth are candidates;
     // already hidden layers remain in layersStack and are not duplicated.
@@ -133,7 +137,6 @@ const extraLayers = [6, 7, 8].map((n) => ({
     };
     hideNext();
   }
-  clickStack?.addEventListener('click', stackFolding);
 
   function stackUnfolding(event: MouseEvent) {
     // Unfolding cancels the current folding run, then restores queued layers
@@ -155,6 +158,7 @@ const extraLayers = [6, 7, 8].map((n) => ({
       window.clearTimeout(stackTimer);
       stackTimer = undefined;
     }
+    //# Restore one queued layer at a time.
     const restoreNext = () => {
       // Pop and reveal one layer, then continue after its one-second reveal.
       if (run !== unfoldRun) return;
@@ -170,6 +174,43 @@ const extraLayers = [6, 7, 8].map((n) => ({
     };
     restoreNext();
   }
-  document.addEventListener('click', stackUnfolding);
+
+  function layerHover(event: PointerEvent) {
+    // Resolve hover from rendered alpha pixels rather than rectangular image
+    // bounds, while ignoring layers currently hidden by the fold state.
+    // Sort overlapping layers by z-index, frontmost first.
+    const layers = [...clickStack.querySelectorAll<HTMLElement>('.part-layer[data-part]')].sort((a, b) => Number.parseInt(getComputedStyle(b).zIndex || '0') - Number.parseInt(getComputedStyle(a).zIndex || '0'));
+    // Ignore hidden layers before sampling their image alpha.
+    const hovered = layers.find((layer) => {
+      if (layer.classList.contains('is-obscured') || getComputedStyle(layer).opacity === '0') return false;
+      const image = layer.querySelector<HTMLImageElement>('.part-layer__stack-texture, .part-layer__texture');
+      if (!image?.complete || !image.naturalWidth) return false;
+      const box = image.getBoundingClientRect();
+      if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) return false;
+      // Draw the current texture into the shared canvas for alpha sampling.
+      clickCanvas.width = image.naturalWidth; clickCanvas.height = image.naturalHeight;
+      clickContext?.clearRect(0, 0, clickCanvas.width, clickCanvas.height); clickContext?.drawImage(image, 0, 0);
+      const x = Math.floor((event.clientX - box.left) * image.naturalWidth / box.width);
+      const y = Math.floor((event.clientY - box.top) * image.naturalHeight / box.height);
+      // Only opaque pixels count as interactive silhouette.
+      return (clickContext?.getImageData(x, y, 1, 1).data[3] ?? 0) > 24;
+    });
+    // Clear the previous hover state before applying the new one.
+    clickStack.querySelectorAll<HTMLElement>('.is-hovered').forEach((layer) => {
+      if (layer !== hovered) layer.classList.remove('is-hovered');
+    });
+    if (hovered) hovered.classList.add('is-hovered');
+  }
+
+  function clearLayerHover() {
+    clickStack.querySelectorAll<HTMLElement>('.is-hovered').forEach((layer) => layer.classList.remove('is-hovered'));
+  }
+
+  // Centralized listener registration.
+  control?.addEventListener('click', toggleControl);
+  clickStack?.addEventListener('click', stackFolding);
+  document?.addEventListener('click', stackUnfolding);
+  clickStack?.addEventListener('pointermove', layerHover);
+  clickStack?.addEventListener('pointerleave', clearLayerHover);
 
 </script>
