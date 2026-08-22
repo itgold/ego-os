@@ -16,7 +16,7 @@ const extraLayers = [6, 7, 8].map((n) => ({
   color: '#53616a', labelY: '90%', chapters: [],
 }));
 
-const chapters = [
+const parts = [
   { number: '01', titleLines: ['Introduction'], y: '20%', anchor: '93%', line: 60 },
   { number: '02', titleLines: ['Foundations'], y: '29.8%', anchor: '94%', line: 80 },
   { number: '03', titleLines: ['Ego OS', 'Architecture'], y: '40.7%', anchor: '96%', line: 72 },
@@ -59,16 +59,16 @@ const chapters = [
     })}
   </div>
 
-  <ol class="chapter-markers" aria-label="Chapters">
-    {chapters.map((chapter, index) => (
-      <li class="chapter-marker" style={`--chapter-y: ${chapter.y}; --chapter-anchor: ${chapter.anchor}; --chapter-line: ${chapter.line}px;`}>
-        <a class="chapter-marker__link" href={`#part-0${index + 1}`}>
+  <ol class="chapter-markers" aria-label="Parts">
+    {parts.map((part, index) => (
+      <li class="chapter-marker" style={`--chapter-y: ${part.y}; --chapter-anchor: ${part.anchor}; --chapter-line: ${part.line}px;`}>
+        <a class="chapter-marker__link" href={`#part-0${index + 1}`} aria-label={`${part.number} ${part.titleLines.join(' ')}`}>
           <span class="chapter-marker__dot" aria-hidden="true"></span>
           <span class="chapter-marker__line" aria-hidden="true"></span>
           <span class="chapter-marker__label">
-            <span class="chapter-marker__number">{chapter.number}</span>
+            <span class="chapter-marker__number">{part.number}</span>
             <span class="chapter-marker__title">
-              {chapter.titleLines.map((titleLine, lineIndex) => (
+              {part.titleLines.map((titleLine, lineIndex) => (
                 <>{lineIndex > 0 && <br />}{titleLine}</>
               ))}
             </span>

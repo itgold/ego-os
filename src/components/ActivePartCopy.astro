@@ -6,12 +6,18 @@ interface Props {
 }
 
 const { activeCopy } = Astro.props;
+const positionStyle = [
+  activeCopy.activeCopyPosition?.x && `--active-copy-x: ${activeCopy.activeCopyPosition.x}`,
+  activeCopy.activeCopyPosition?.y && `--active-copy-y: ${activeCopy.activeCopyPosition.y}`,
+  activeCopy.activeCopyPosition?.mobileX && `--active-copy-mobile-x: ${activeCopy.activeCopyPosition.mobileX}`,
+  activeCopy.activeCopyPosition?.mobileY && `--active-copy-mobile-y: ${activeCopy.activeCopyPosition.mobileY}`,
+].filter(Boolean).join('; ');
 ---
 
-<section class="active-part-copy" aria-labelledby={`chapter-${activeCopy.partId}-title`}>
+<section class:list={['active-part-copy', `active-part-copy--${activeCopy.activeCopyTheme}`]} style={positionStyle || undefined} aria-labelledby={`chapter-${activeCopy.partId}-title`}>
   <div class="active-part-copy__heading">
     <span class="active-part-copy__number">{activeCopy.activeNumber}</span>
-    <h3 id={`chapter-${activeCopy.partId}-title`}>{activeCopy.activeTitle}</h3>
+    <h3 id={`chapter-${activeCopy.partId}-title`} aria-label={activeCopy.activeTitle}>{activeCopy.activeTitle}</h3>
   </div>
   <div class="active-part-copy__rule" aria-hidden="true"><span></span></div>
   <p>{activeCopy.activeQuote.map((line, index) => <>{index > 0 && <br />}{line}</>)}</p>

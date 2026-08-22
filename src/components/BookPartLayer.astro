@@ -44,7 +44,7 @@ const stackAsset = part.asset.replace('-texture-stack.png', '-texture.png');
     </div>
   </div>
   <button class="part-layer__hit" type="button" aria-label={`Toggle ${part.number} ${part.title}`}></button>
-  <a class="part-layer__label" href={part.href}>
+  <a class="part-layer__label" href={part.href} aria-label={`${part.number}${part.title ? ` ${part.title}` : ''}`}>
     <span class="part-layer__rule" aria-hidden="true"></span>
     <span class="part-layer__number">{part.number}<span class="part-layer__separator" aria-hidden="true"> — </span></span>
     <span class="part-layer__title">{part.title}</span>

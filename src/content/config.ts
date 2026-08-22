@@ -19,6 +19,13 @@ const parts = defineCollection({
     activeNumber: z.string(),
     activeTitle: z.string(),
     activeQuote: z.array(z.string()),
+    activeCopyPosition: z.object({
+      x: z.string().optional(),
+      y: z.string().optional(),
+      mobileX: z.string().optional(),
+      mobileY: z.string().optional(),
+    }).optional(),
+    activeCopyTheme: z.enum(['light', 'dark']).default('dark'),
   }),
 });
 
