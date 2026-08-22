@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1163 853">
+  <style>
+    .stream { stroke-dasharray: 3 97; animation: flow 10s linear infinite reverse; }
+    @keyframes flow { to { stroke-dashoffset: 100; } }
+    @media (prefers-reduced-motion: reduce) { .stream { animation: none; } }
+  </style>
+  <g fill="none" stroke="#9fb4a0" stroke-width="1" opacity=".34">
+    <path d="M0 350C110 335 190 300 270 305S400 345 500 320 650 270 760 295 930 350 1163 315"/>
+    <path d="M0 375C115 360 190 330 275 335S405 370 505 345 650 300 765 320 930 375 1163 340"/>
+    <path d="M0 402C120 388 195 360 280 365S410 398 510 374 655 330 770 348 935 402 1163 368"/>
+  </g>
+  <g fill="none" stroke-width="2" opacity=".78">
+    <path class="stream" stroke="#d7b46a" d="M260 853C300 760 410 700 520 640S650 540 760 500 840 440 850 400"/>
+    <path class="stream" stroke="#9fb4a0" d="M360 853C390 760 480 700 570 650S690 560 790 520 870 450 885 410"/>
+    <path class="stream" stroke="#d28b68" d="M80 700C260 650 430 620 590 600S780 560 900 500 1010 460 1120 450"/>
+  </g>
+</svg>

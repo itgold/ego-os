@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1163 853" fill="none">
+  <style>
+    .pulse { animation: travel 7s linear infinite; }
+    .pulse:nth-child(2n) { animation-delay: -2.4s; animation-duration: 9s; }
+    @keyframes travel { 0%,15% { opacity:0; stroke-dashoffset:100; } 30% { opacity:.8; } 70%,100% { opacity:0; stroke-dashoffset:0; } }
+    @media (prefers-reduced-motion:reduce) { .pulse { animation:none; opacity:.2; } }
+  </style>
+  <g opacity=".24" stroke="#fffdf4" stroke-width="1">
+    <path d="M120 690 300 540 470 610 650 420 840 500 1040 270"/><path d="M70 560 260 420 430 500 620 320 820 390 1100 180"/>
+    <path d="M180 760 360 600 540 670 730 500 920 570 1080 430"/><path d="M260 150 420 280 600 210 790 350 980 250"/>
+    <path d="M120 690 180 760M300 540 360 600M470 610 540 670M650 420 730 500M840 500 920 570M1040 270 1080 430"/>
+  </g>
+  <g stroke="#fffdf4" stroke-width="1.6" stroke-linecap="round" stroke-dasharray="2 98" pathLength="100" opacity=".8">
+    <path class="pulse" d="M120 690 300 540 470 610 650 420 840 500 1040 270"/>
+    <path class="pulse" d="M70 560 260 420 430 500 620 320 820 390 1100 180"/>
+    <path class="pulse" d="M180 760 360 600 540 670 730 500 920 570 1080 430"/>
+  </g>
+  <g fill="#fffdf4">
+    <circle cx="120" cy="690" r="3"/><circle cx="300" cy="540" r="2.5"/><circle cx="470" cy="610" r="3"/><circle cx="650" cy="420" r="2.5"/><circle cx="840" cy="500" r="3"/><circle cx="1040" cy="270" r="3"/>
+  </g>
+</svg>

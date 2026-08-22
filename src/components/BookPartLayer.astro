@@ -30,6 +30,13 @@ const stackAsset = part.asset.replace('-texture-stack.png', '-texture.png');
         alt=""
         loading="eager"
       />
+      {part.id === 'part-02' && <img class="part-layer__particle-grid" src="/assets/overlays/layer-02-particle-grid.svg" width="1163" height="853" alt="" aria-hidden="true" />}
+      {part.id === 'part-03' && <img class="part-layer__particle-grid" src="/assets/overlays/layer-03-particles.svg" width="1163" height="853" alt="" aria-hidden="true" />}
+      {part.id === 'part-04' && <img class="part-layer__particle-grid" src="/assets/overlays/layer-04-particle-grid.svg" width="1163" height="853" alt="" aria-hidden="true" />}
+      {part.id === 'part-05' && <img class="part-layer__particle-grid part-layer__resource-stream" src="/assets/overlays/layer-05-resource-stream.svg" width="1163" height="853" alt="" aria-hidden="true" />}
+      {part.id === 'part-06' && <img class="part-layer__particle-grid" src="/assets/overlays/layer-06-orbital-particles.svg" width="1163" height="853" alt="" aria-hidden="true" />}
+      {part.id === 'part-07' && <img class="part-layer__particle-grid" src="/assets/overlays/layer-07-firefly-particles.svg" width="1163" height="853" alt="" aria-hidden="true" />}
+      {part.id === 'part-08' && <img class="part-layer__particle-grid" src="/assets/overlays/layer-08-cosmic-particles.svg" width="1163" height="853" alt="" aria-hidden="true" />}
       {part.id !== 'part-01' && (
         <Image class="part-layer__stack-texture" src={stackAsset} width={1163} height={853} alt="" aria-hidden="true" loading="eager" />
       )}

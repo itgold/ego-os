@@ -221,6 +221,17 @@ body:has(.homepage-shell) {
 .part-layer--active .part-layer__surface { z-index:1; }
 
 .part-layer__content { position: absolute; inset: 0; transition: transform var(--duration-paper) var(--ease-paper); }
+.part-layer__particle-grid { position:absolute; z-index:3; inset:0; width:100%; height:100%; object-fit:contain; opacity:.95; pointer-events:none; mix-blend-mode:screen; mask:url('/assets/home-layers/layer-02-texture.png') center / 100% 100% no-repeat; -webkit-mask:url('/assets/home-layers/layer-02-texture.png') center / 100% 100% no-repeat; }
+.part-layer[data-part='part-03'] .part-layer__particle-grid { mask-image:url('/assets/home-layers/layer-03-texture.png'); -webkit-mask-image:url('/assets/home-layers/layer-03-texture.png'); }
+.part-layer[data-part='part-04'] .part-layer__particle-grid { mask-image:url('/assets/home-layers/layer-04-texture.png'); -webkit-mask-image:url('/assets/home-layers/layer-04-texture.png'); }
+.part-layer[data-part='part-05'] .part-layer__particle-grid { mask-image:url('/assets/home-layers/layer-05-texture.png'); -webkit-mask-image:url('/assets/home-layers/layer-05-texture.png'); }
+.part-layer[data-part='part-05'] .part-layer__particle-grid { transform: translateX(-15%); width:115%; max-width:none; }
+.part-layer[data-part='part-05'] .part-layer__resource-stream { transform: translate(-25%, -10%); }
+.part-layer[data-part='part-05'] .part-layer__particle-grid { z-index:8; opacity:1; mix-blend-mode:screen; }
+.part-layer[data-part='part-06'] .part-layer__particle-grid { mask-image:url('/assets/home-layers/layer-06-texture.png'); -webkit-mask-image:url('/assets/home-layers/layer-06-texture.png'); }
+.part-layer[data-part='part-07'] .part-layer__particle-grid { mask-image:url('/assets/home-layers/layer-07-texture.png'); -webkit-mask-image:url('/assets/home-layers/layer-07-texture.png'); }
+.part-layer[data-part='part-08'] .part-layer__particle-grid { mask-image:url('/assets/home-layers/layer-08-texture.png'); -webkit-mask-image:url('/assets/home-layers/layer-08-texture.png'); }
+.part-layer[data-part='part-03'] .part-layer__particle-grid { transform: translate(3px, -2px) scale(.995); opacity:.88; }
 .part-layer__hit { display: none; }
 
 .part-layer__texture {

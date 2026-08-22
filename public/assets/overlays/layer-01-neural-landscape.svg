@@ -52,9 +52,9 @@
 
     <!-- Perspective links converge on the beacon. -->
     <g opacity=".12" stroke-width=".8">
-      <path d="M248 838C423 690 588 505 734 151"/>
-      <path d="M609 652C665 500 708 329 734 151"/>
-      <path d="M855 494C798 374 757 257 734 151"/>
+      <path d="M248 838C423 690 588 505 885 105"/>
+      <path d="M609 652C665 500 760 270 885 105"/>
+      <path d="M855 494C798 374 820 230 885 105"/>
     </g>
 
     <!-- Fine neural mesh, echoing the organic white network in the reference. -->
@@ -69,7 +69,7 @@
     </g>
 
     <g fill="#fffdf6" stroke="none" opacity=".78">
-      <circle cx="99" cy="700" r="2.3"/><circle cx="195" cy="736" r="2.1"/><circle cx="223" cy="672" r="2.5"/>
+      <circle cx="885" cy="105" r="5"/><circle cx="99" cy="700" r="2.3"/><circle cx="195" cy="736" r="2.1"/><circle cx="223" cy="672" r="2.5"/>
       <circle cx="297" cy="588" r="2.2"/><circle cx="341" cy="645" r="2.4"/><circle cx="387" cy="605" r="2.3"/>
       <circle cx="444" cy="506" r="2"/><circle cx="490" cy="573" r="2.2"/><circle cx="536" cy="642" r="2.6"/>
       <circle cx="597" cy="543" r="2.1"/><circle cx="637" cy="493" r="2"/><circle cx="693" cy="551" r="2.4"/>
@@ -85,7 +85,7 @@
       <path class="signal-pulse" pathLength="100" d="M248 838C335 790 405 761 479 736c72-24 111-50 130-84 16-28 13-55 46-69 33-15 72 0 111-20 29-15 53-41 78-76"/>
       <path class="signal-pulse" pathLength="100" d="M118 645C184 608 244 627 297 588s86-93 147-82 92 65 153 37 88-101 153-97 102 57 158 21"/>
       <path class="signal-pulse" pathLength="100" d="M224 491C274 459 319 470 365 437s73-72 124-65 75 47 125 27 75-70 129-67 84 38 133 8"/>
-      <path class="signal-pulse" pathLength="100" d="M609 652C665 500 708 329 734 151"/>
+      <path class="signal-pulse" pathLength="100" d="M609 652C665 500 760 270 885 105"/>
     </g>
 
     <!-- Nodes scale down with distance to suggest depth. -->
@@ -112,8 +112,6 @@
         <circle cx="507" cy="390" r="1.7"/><circle cx="646" cy="385" r="1.6"/>
         <circle cx="792" cy="367" r="1.5"/><circle cx="948" cy="337" r="1.4"/>
       </g>
-      <circle cx="734" cy="151" r="5" opacity=".8"/>
-      <circle cx="734" cy="151" r="10" opacity=".2" filter="url(#soft-node)"/>
     </g>
   </g>
 </svg>
