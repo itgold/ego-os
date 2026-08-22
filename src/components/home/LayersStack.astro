@@ -1,10 +1,9 @@
 ---
-import { bookParts } from '../data/bookParts';
+import { bookParts } from '../../data/bookParts';
 import { getCollection } from 'astro:content';
-import BookPartLayer from './BookPartLayer.astro';
-import FoundationsArtwork from './FoundationsArtwork.astro';
-import ActivePartCopy from './ActivePartCopy.astro';
-import PerspectiveControls from './PerspectiveControls.astro';
+import BookPartLayer from './layers/BookPartLayer.astro';
+import Layer01Artwork from './layers/Layer01Artwork.astro';
+import ActiveBookPartCopy from './layers/ActiveBookPartCopy.astro';
 import { Image } from 'astro:assets';
 
 const layerOrder = [...bookParts].reverse();
@@ -35,7 +34,7 @@ const parts = [
       const activeCopy = activeCopyByPart.get(part.id);
       return (
         <BookPartLayer part={part} index={index + 5}>
-          {activeCopy && <ActivePartCopy activeCopy={activeCopy} />}
+          {activeCopy && <ActiveBookPartCopy activeCopy={activeCopy} />}
         </BookPartLayer>
       );
     })}
@@ -46,13 +45,11 @@ const parts = [
         {part.defaultLayer && (
           <>
             <Image class="part-layer__stack-texture" src="/assets/home-layers/layer-01-texture.png" width={1163} height={853} alt="" aria-hidden="true" loading="eager" />
-            <FoundationsArtwork />
+            <Layer01Artwork />
           </>
         )}
         {activeCopy && (
-          <ActivePartCopy activeCopy={activeCopy}>
-            {part.defaultLayer && <PerspectiveControls />}
-          </ActivePartCopy>
+          <ActiveBookPartCopy activeCopy={activeCopy} />
         )}
       </BookPartLayer>
       );
@@ -204,6 +201,11 @@ const parts = [
       return clickContext.getImageData(x, y, 1, 1).data[3] > 180;
     });
     if (!hit) return;
+    if (hit.classList.contains('part-layer--active')) {
+      const destination = hit.querySelector<HTMLAnchorElement>('.part-layer__label')?.href;
+      if (destination) window.location.assign(destination);
+      return;
+    }
     foldToLayer(Number(hit.dataset.part?.replace('part-', '')), hit);
   }
 
@@ -283,9 +285,16 @@ const parts = [
     });
     // Clear the previous hover state before applying the new one.
     clickStack.querySelectorAll<HTMLElement>('.is-hovered').forEach((layer) => {
-      if (layer !== hovered) layer.classList.remove('is-hovered');
+      if (layer !== hovered) {
+        layer.classList.remove('is-hovered');
+        layer.style.cursor = 'default';
+      }
     });
-    if (hovered) hovered.classList.add('is-hovered');
+    clickStack.style.cursor = hovered ? 'pointer' : 'default';
+    if (hovered) {
+      hovered.classList.add('is-hovered');
+      hovered.style.cursor = 'pointer';
+    }
   }
 
   /**
@@ -294,7 +303,11 @@ const parts = [
    */
   function clearLayerHover() {
     if (!clickStack) return;
-    clickStack.querySelectorAll<HTMLElement>('.is-hovered').forEach((layer) => layer.classList.remove('is-hovered'));
+    clickStack.style.cursor = 'default';
+    clickStack.querySelectorAll<HTMLElement>('.is-hovered').forEach((layer) => {
+      layer.classList.remove('is-hovered');
+      layer.style.cursor = 'default';
+    });
   }
 
   // Centralized listener registration: these bindings define when each
@@ -303,9 +316,6 @@ const parts = [
   clickStack?.addEventListener('dblclick', (event) => event.preventDefault());
   structure?.querySelectorAll<HTMLAnchorElement>('.chapter-marker__link').forEach((link) => {
     link.addEventListener('click', chapterLabelClick);
-  });
-  structure?.querySelectorAll<HTMLButtonElement>('.chapter-control').forEach((button) => {
-    button.addEventListener('click', (event) => event.stopPropagation());
   });
   document?.addEventListener('click', stackUnfolding);
   clickStack?.addEventListener('pointermove', layerHover);

@@ -1,8 +1,8 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Header from '../components/Header.astro';
-import EgoTitle from '../components/EgoTitle.astro';
-import MindStructure from '../components/MindStructure.astro';
+import Header from '../components/home/Header.astro';
+import EgoTitle from '../components/home/EgoTitle.astro';
+import LayersStack from '../components/home/LayersStack.astro';
 import '../styles/homepage.css';
 ---
 
@@ -11,7 +11,7 @@ import '../styles/homepage.css';
     <Header />
     <main id="main-content" class="homepage-main">
       <EgoTitle />
-      <MindStructure />
+      <LayersStack />
     </main>
     <p class="edition-mark" aria-hidden="true">A field guide to the architecture of self · 2026</p>
   </div>

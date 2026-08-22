@@ -4,7 +4,7 @@ import BookHeader from '../../components/BookHeader.astro';
 import { bookParts } from '../../data/bookParts';
 
 export function getStaticPaths() {
-  return bookParts.map((part) => ({
+  return bookParts.filter((part) => part.pageType !== 'content').map((part) => ({
     params: { slug: part.href.split('/').filter(Boolean).at(-1) },
     props: { part },
   }));

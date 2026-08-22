@@ -1,6 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
-import ChapterLayout from '../../layouts/ChapterLayout.astro';
+import PartLayout from '../../layouts/PartLayout.astro';
 
 export async function getStaticPaths() {
   const chapters = (await getCollection('chapters', ({ data }) => !data.draft))
@@ -20,6 +20,6 @@ const { chapter, previous, next } = Astro.props;
 const { Content } = await chapter.render();
 ---
 
-<ChapterLayout {chapter} {previous} {next}>
+<PartLayout {chapter} {previous} {next}>
   <Content />
-</ChapterLayout>
+</PartLayout>

@@ -12,7 +12,7 @@ const { previous, next } = Astro.props;
 <nav class="chapter-navigation" aria-label="Chapter navigation">
   <a class="chapter-navigation__contents" href="/#contents">Table of contents</a>
   <div class="chapter-navigation__links">
-    {previous ? <a href={`/chapters/${previous.slug}/`}>← Previous chapter</a> : <span />}
-    {next ? <a href={`/chapters/${next.slug}/`}>Next chapter →</a> : <span />}
+    {previous ? <a href={`/book/${previous.slug}/`}>← Previous chapter</a> : <span />}
+    {next ? <a href={`/book/${next.slug}/`}>Next chapter →</a> : <span />}
   </div>
 </nav>

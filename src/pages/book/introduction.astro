@@ -1,0 +1,31 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import BookHeader from '../../components/BookHeader.astro';
+
+const introduction = (await getCollection('chapters', ({ data }) => !data.draft))
+  .find(({ slug }) => slug === '01-introduction');
+
+if (!introduction) {
+  throw new Error('The Introduction part content could not be found.');
+}
+
+const { Content } = await introduction.render();
+---
+
+<BaseLayout
+  title="Part I — Introduction — Ego OS"
+  description={introduction.data.description}
+>
+  <BookHeader currentChapter="Part I" />
+  <main id="main-content" class="chapter part-page">
+    <header class="chapter__header">
+      <p class="eyebrow">Part I</p>
+      <h1>Introduction</h1>
+      <p class="chapter__description">{introduction.data.description}</p>
+    </header>
+    <article class="chapter__content">
+      <Content />
+    </article>
+  </main>
+</BaseLayout>
