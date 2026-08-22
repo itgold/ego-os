@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&display=swap");
 
 :root {
   --color-background: #eee9de;
@@ -101,7 +101,7 @@ body:has(.homepage-shell) {
   margin: 0;
   font-family: var(--font-display);
   font-size: clamp(4rem, 26vw, 26rem);
-  font-weight: 400;
+  font-weight: 600;
   letter-spacing: normal;
   font-kerning: normal;
   line-height: .95;
@@ -144,7 +144,7 @@ body:has(.homepage-shell) {
   line-height: 1.2;
   letter-spacing: -.01em;
   font-family: "Cormorant Garamond", serif;
-  font-weight: 400;
+  font-weight: 600;
   white-space: nowrap;
 }
 
@@ -157,13 +157,116 @@ body:has(.homepage-shell) {
 
 .mind-structure__stack {
   position: absolute;
-  width: min(64vw, 82rem);
+  width: min(76vw, 82rem);
   aspect-ratio: 1163 / 853;
-  left: 50%;
+  left: 44.5%;
   right: auto;
   top: calc(50vh - clamp(9.5rem, 15vh, 10.5rem));
   bottom: auto;
   transform: translate(-50%, -50%);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.mind-structure__stack img,
+.mind-structure__stack svg {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Chapter markers sit in a separate layer so the source paper artwork remains untouched. */
+.chapter-markers {
+  position: absolute;
+  z-index: 22;
+  top: calc(50vh - clamp(9.5rem, 15vh, 10.5rem));
+  left: 44.5%;
+  width: min(76vw, 82rem);
+  aspect-ratio: 1163 / 853;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+.chapter-marker {
+  position: absolute;
+  top: var(--chapter-y);
+  left: var(--chapter-anchor);
+  height: 1px;
+  pointer-events: none;
+}
+
+.chapter-marker__link {
+  position: relative;
+  display: block;
+  width: max-content;
+  height: 1px;
+  color: #1d1b18;
+  font-family: "Cormorant Garamond", serif;
+  font-size: clamp(1.25rem, 1.45vw, 1.5rem);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -.015em;
+  text-decoration: none;
+  white-space: nowrap;
+  pointer-events: auto;
+}
+
+.chapter-marker__dot {
+  position: absolute;
+  z-index: 1;
+  top: -3px;
+  left: -3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #171613;
+}
+
+.chapter-marker__line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--chapter-line);
+  height: 1px;
+  background: rgb(23 22 19 / .5);
+}
+
+.chapter-marker__label {
+  position: absolute;
+  top: 0;
+  left: calc(var(--chapter-line) + 8px);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transform: translateY(-50%);
+}
+
+.chapter-marker__number,
+.chapter-marker__title {
+  font: inherit;
+}
+
+.chapter-marker__number {
+  color: #9f432f;
+  font-weight: 600;
+}
+
+.chapter-marker__link:hover,
+.chapter-marker__link:focus-visible {
+  color: #c45f3f;
+}
+
+.chapter-marker__link:hover .chapter-marker__line,
+.chapter-marker__link:focus-visible .chapter-marker__line {
+  background: #c45f3f;
+}
+
+.chapter-marker__link:focus-visible {
+  outline: 1px solid #c45f3f;
+  outline-offset: 5px;
 }
 
 .mind-structure__base {
@@ -304,14 +407,66 @@ body:has(.homepage-shell) {
 .active-part-copy {
   position: absolute;
   z-index: 18;
-  top: 35%;
-  left: 10.2%;
-  width: 28%;
+  top: 31%;
+  left: 34%;
+  width: 310px;
+  color: #24211d;
+  font-family: "Cormorant Garamond", serif;
+  font-synthesis: none;
+  visibility: hidden;
+  opacity: 0;
   pointer-events: none;
+  transform: translateY(-50%);
+  transition: opacity 240ms ease, visibility 0s linear 240ms;
 }
 
-.active-part-copy__rule { display: block; width: 6.5rem; height: 1px; margin: 0 0 1.45rem; background: var(--color-coral); }
-.active-part-copy blockquote { max-width: 17rem; margin: 0; font-family: var(--font-display); font-size: clamp(.8rem, 1.05vw, 1.1rem); line-height: 1.55; }
+.part-layer.is-active .active-part-copy {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  transition-delay: 0s;
+}
+
+.part-layer.is-active .active-part-copy h3 { color: #1d1b18; }
+.part-layer.is-active .active-part-copy p { color: #24211d; }
+
+.active-part-copy__heading { display: flex; align-items: baseline; gap: 17px; white-space: nowrap; }
+.active-part-copy__number {
+  color: #9f432f;
+  font-family: "Cormorant Garamond", serif;
+  font-size: 60px;
+  font-weight: 600;
+  line-height: .9;
+  letter-spacing: -.04em;
+  font-kerning: normal;
+  font-variant-numeric: lining-nums;
+  font-feature-settings: "lnum" 1, "kern" 1;
+}
+.active-part-copy h3 { margin: 0; color: #1d1b18; font-size: 32px; font-weight: 500; line-height: 1; letter-spacing: -.025em; }
+.active-part-copy__rule { position: relative; display: block; width: 105px; height: 1px; margin-top: 25px; background: rgb(196 95 63 / .75); }
+.active-part-copy__rule span { position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; border-radius: 50%; background: #c45f3f; transform: translate(-50%, -50%); }
+.active-part-copy p {
+  display: table;
+  width: 370px;
+  max-width: none;
+  margin: 23px 0 0 -40px;
+  padding: 0;
+  background: transparent;
+  color: #24211d;
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 1.42;
+  letter-spacing: -.015em;
+}
+.active-part-copy__controls { display: none; }
+.chapter-control { display: grid; width: 46px; height: 46px; flex: 0 0 46px; place-items: center; padding: 0; border: 1px solid rgb(196 95 63 / .5); border-radius: 50%; background: transparent; color: #35312c; cursor: pointer; transition: border-color 160ms ease, color 160ms ease; }
+.chapter-control--active { border-color: #c45f3f; color: #c45f3f; }
+.chapter-control svg { width: 27px; height: 27px; fill: none; stroke: currentColor; stroke-width: 1.1; stroke-linecap: round; stroke-linejoin: round; }
+.chapter-control:hover { border-color: #c45f3f; color: #c45f3f; }
+.chapter-control:focus-visible { outline: 1px solid #c45f3f; outline-offset: 4px; }
+.chapter-control__separator { position: relative; width: 1px; height: 42px; flex: 0 0 1px; }
+.chapter-control__separator::before { position: absolute; inset: 0; content: ''; background: repeating-linear-gradient(to bottom, rgb(196 95 63 / .75) 0 1px, transparent 1px 4px); mask: linear-gradient(to bottom, #000 0 calc(50% - 4px), transparent calc(50% - 4px) calc(50% + 4px), #000 calc(50% + 4px)); }
+.chapter-control__separator::after { position: absolute; top: 50%; left: 50%; width: 5px; height: 5px; border-radius: 50%; background: rgb(196 95 63 / .75); content: ''; transform: translate(-50%, -50%); }
 
 .foundations-artwork {
   position: absolute;
@@ -380,7 +535,24 @@ body:has(.homepage-shell) {
 }
 
 @media (max-width: 70rem) {
-  .mind-structure__stack { width: min(74vw, 72rem); }
+  .mind-structure__stack { left: 44.5%; width: min(74vw, 72rem); }
+  .chapter-markers { left: 44.5%; width: min(74vw, 72rem); }
+  .chapter-marker__link { font-size: clamp(1.1rem, 1.55vw, 1.35rem); }
+  .chapter-marker__line { width: calc(var(--chapter-line) * .68); }
+  .chapter-marker__label {
+    max-width: none;
+    display: inline-flex;
+    white-space: nowrap;
+  }
+  .chapter-marker__number {
+    display: inline-block;
+    margin-right: 8px;
+    white-space: nowrap;
+  }
+  .chapter-marker__title {
+    display: inline;
+    white-space: nowrap;
+  }
   .part-layer__label { right: 0; }
   .part-layer__title { max-width: 8rem; white-space: normal; }
   .ego-title h1 { font-size: clamp(4rem, 10vw, 7rem); line-height: .95; }
@@ -395,6 +567,9 @@ body:has(.homepage-shell) {
   .site-header a:not(.menu-link) { display: none; }
   .mind-structure { inset-top: 9rem; }
   .mind-structure__stack { left: 50%; right: auto; width: 93vw; top: clamp(11rem, 25vh, 15rem); bottom: auto; transform: translateX(-50%); }
+  .chapter-markers { top: clamp(11rem, 25vh, 15rem); width: 93vw; transform: translateX(-50%); }
+  .chapter-marker__link { font-size: 1.12rem; }
+  .chapter-marker__line { width: calc(var(--chapter-line) * .48); }
   .part-layer { top: 0; transform: none; }
   .part-layer__label { right: 0; grid-template-columns: 2.5rem auto; gap: .35rem; }
   .part-layer__label .part-layer__title { grid-column: 2; max-width: 7rem; font-size: .78rem; }
@@ -438,6 +613,47 @@ body:has(.homepage-shell) {
   .mind-structure { position: relative; inset: auto; min-height: 53rem; margin-top: 1rem; }
   .mind-structure__stack { position: relative; left: auto; top: auto; right: auto; bottom: auto; width: 100%; height: 49rem; aspect-ratio: auto; transform: none; }
   .mind-structure__base { transform: none; }
+
+  .chapter-markers {
+    position: relative;
+    z-index: 32;
+    top: auto;
+    left: auto;
+    width: auto;
+    height: auto;
+    margin: 1rem 1.25rem 0;
+    aspect-ratio: auto;
+    display: grid;
+    gap: 0;
+    transform: none;
+  }
+  .chapter-marker {
+    position: relative;
+    top: auto;
+    left: auto;
+    height: auto;
+    border-top: 1px solid rgb(29 27 24 / .18);
+  }
+  .chapter-marker:last-child { border-bottom: 1px solid rgb(29 27 24 / .18); }
+  .chapter-marker__link {
+    display: flex;
+    width: 100%;
+    height: 44px;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.35rem;
+  }
+  .chapter-marker__dot,
+  .chapter-marker__line { display: none; }
+  .chapter-marker__label {
+    position: static;
+    max-width: none;
+    display: inline-flex;
+    white-space: nowrap;
+    transform: none;
+  }
+  .chapter-marker__number { margin-right: 0; }
+  .chapter-marker__title { display: inline; }
 
   .part-layer {
     position: absolute;
@@ -484,7 +700,7 @@ body:has(.homepage-shell) {
   .part-layer:not(.part-layer--active) .part-layer__label { display: grid; }
   .depth-key { display: none; }
 
-  .active-part-copy { top: 5.5rem; left: 1.7rem; width: 38%; }
+  .active-part-copy { top: 5.5rem; left: 1.7rem; width: 38%; transform: none; }
   .active-part-copy__rule { display: none; }
   .active-part-copy blockquote { font-size: .8rem; line-height: 1.45; }
   .foundations-artwork { mask: none; }

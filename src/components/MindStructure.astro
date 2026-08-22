@@ -1,40 +1,82 @@
 ---
 import { bookParts } from '../data/bookParts';
+import { getCollection } from 'astro:content';
 import BookPartLayer from './BookPartLayer.astro';
 import FoundationsArtwork from './FoundationsArtwork.astro';
-import UnfoldControl from './UnfoldControl.astro';
+import ActivePartCopy from './ActivePartCopy.astro';
+import PerspectiveControls from './PerspectiveControls.astro';
 import { Image } from 'astro:assets';
 
 const layerOrder = [...bookParts].reverse();
+const partContent = await getCollection('parts');
+const activeCopyByPart = new Map(partContent.map(({ data }) => [data.partId, data]));
 const extraLayers = [6, 7, 8].map((n) => ({
   id: `part-0${n}`, number: `Layer ${n}`, title: '', href: '#',
   asset: `/assets/home-layers/layer-0${n}-texture-stack.png`, mask: '',
   color: '#53616a', labelY: '90%', chapters: [],
 }));
+
+const chapters = [
+  { number: '01', titleLines: ['Introduction'], y: '20%', anchor: '93%', line: 60 },
+  { number: '02', titleLines: ['Foundations'], y: '29.8%', anchor: '94%', line: 80 },
+  { number: '03', titleLines: ['Ego OS', 'Architecture'], y: '40.7%', anchor: '96%', line: 72 },
+  { number: '04', titleLines: ['The Self', 'and Its World'], y: '50.4%', anchor: '97%', line: 70 },
+  { number: '05', titleLines: ['Control', 'and Behavior'], y: '62%', anchor: '97%', line: 71 },
+  { number: '06', titleLines: ['System Resources'], y: '71%', anchor: '97%', line: 61 },
+  { number: '07', titleLines: ['Conclusion'], y: '80%', anchor: '97%', line: 66 },
+];
 ---
 
 <section class="mind-structure" id="parts" aria-labelledby="structure-title" data-mind-structure>
   <h2 id="structure-title" class="sr-only">The five parts of Ego OS</h2>
 
   <div class="mind-structure__stack">
-    {extraLayers.map((part, index) => <BookPartLayer part={part} index={index + 5} />)}
-    {layerOrder.map((part) => (
+    {extraLayers.map((part, index) => {
+      const activeCopy = activeCopyByPart.get(part.id);
+      return (
+        <BookPartLayer part={part} index={index + 5}>
+          {activeCopy && <ActivePartCopy activeCopy={activeCopy} />}
+        </BookPartLayer>
+      );
+    })}
+    {layerOrder.map((part) => {
+      const activeCopy = activeCopyByPart.get(part.id);
+      return (
       <BookPartLayer part={part} index={bookParts.indexOf(part)}>
         {part.defaultLayer && (
           <>
             <Image class="part-layer__stack-texture" src="/assets/home-layers/layer-01-texture.png" width={1163} height={853} alt="" aria-hidden="true" loading="eager" />
-            <div class="active-part-copy">
-              <span class="active-part-copy__rule" aria-hidden="true"></span>
-              <blockquote>To understand the self, begin with the system that builds it.</blockquote>
-            </div>
             <FoundationsArtwork />
           </>
         )}
+        {activeCopy && (
+          <ActivePartCopy activeCopy={activeCopy}>
+            {part.defaultLayer && <PerspectiveControls />}
+          </ActivePartCopy>
+        )}
       </BookPartLayer>
-    ))}
+      );
+    })}
   </div>
 
-  <UnfoldControl />
+  <ol class="chapter-markers" aria-label="Chapters">
+    {chapters.map((chapter, index) => (
+      <li class="chapter-marker" style={`--chapter-y: ${chapter.y}; --chapter-anchor: ${chapter.anchor}; --chapter-line: ${chapter.line}px;`}>
+        <a class="chapter-marker__link" href={`#part-0${index + 1}`}>
+          <span class="chapter-marker__dot" aria-hidden="true"></span>
+          <span class="chapter-marker__line" aria-hidden="true"></span>
+          <span class="chapter-marker__label">
+            <span class="chapter-marker__number">{chapter.number}</span>
+            <span class="chapter-marker__title">
+              {chapter.titleLines.map((titleLine, lineIndex) => (
+                <>{lineIndex > 0 && <br />}{titleLine}</>
+              ))}
+            </span>
+          </span>
+        </a>
+      </li>
+    ))}
+  </ol>
 
   <ol class="depth-key" aria-label="Reading depth">
     {bookParts.map((part) => (
@@ -47,15 +89,6 @@ const extraLayers = [6, 7, 8].map((n) => ({
 
 <script>
   const structure = document.querySelector<HTMLElement>('[data-mind-structure]');
-  const control = document.querySelector<HTMLAnchorElement>('[data-unfold-control]');
-
-  function toggleControl(event: MouseEvent) {
-    if (!structure || !control) return;
-      event.preventDefault();
-      const isOpen = structure.classList.toggle('is-unfolded');
-      control.setAttribute('aria-expanded', String(isOpen));
-      structure.dataset.state = isOpen ? 'unfolded' : 'folded';
-  }
 
   // Swap each layer's texture only on an explicit click.
   const clickStack = structure?.querySelector<HTMLElement>('.mind-structure__stack');
@@ -74,39 +107,18 @@ const extraLayers = [6, 7, 8].map((n) => ({
   // Generation token that invalidates stale unfolding callbacks.
   let unfoldRun = 0;
 
-  // Resolve the visual layer order from z-index before hit testing.
-  function stackFolding(event: MouseEvent) {
-    //# Begin folding from the pixel-accurate clicked layer.
-    // Folding starts from the layer the pointer actually hit. Upper layers
-    // are queued in depth order and hidden one at a time.
-    if (!clickContext) return;
+  /**
+   * Folds every visible layer above a selected layer in depth order.
+   * The selected layer becomes active when its immediate covering layer is hidden.
+   * Called by stackFolding for artwork clicks and by selectPart when a label
+   * targets a currently visible layer.
+   */
+  function foldToLayer(clickedDepth: number, hit: HTMLElement) {
+    if (!structure) return;
 
-    // Search topmost-to-bottommost for the pixel under the pointer.
-    const layers = [...(structure?.querySelectorAll<HTMLElement>('.part-layer[data-part]') ?? [])]
-      .sort((a, b) => Number.parseInt(getComputedStyle(b).zIndex || '0') - Number.parseInt(getComputedStyle(a).zIndex || '0'));
-    const hit = layers.find((layer) => {
-      const image = layer.querySelector<HTMLImageElement>('.part-layer__stack-texture, .part-layer__texture');
-      if (!image?.complete || !image.naturalWidth) return false;
-      const box = image.getBoundingClientRect();
-      if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) return false;
-      clickCanvas.width = image.naturalWidth; clickCanvas.height = image.naturalHeight;
-      clickContext.clearRect(0, 0, clickCanvas.width, clickCanvas.height); clickContext.drawImage(image, 0, 0);
-      const x = Math.floor((event.clientX - box.left) * image.naturalWidth / box.width);
-      const y = Math.floor((event.clientY - box.top) * image.naturalHeight / box.height);
-      // Require a strongly opaque pixel so antialiased edges and transparent
-      // padding do not create oversized click regions.
-      return clickContext.getImageData(x, y, 1, 1).data[3] > 180;
-    });
-    // Transparent pixels are ignored, so a click can fall through to a lower
-    // silhouette instead of always selecting the top image rectangle.
-    //# Abort when the pointer is outside every visible silhouette.
-    if (!hit) return;
     unfoldRun += 1;
     const run = ++stackRun;
-    //# Determine which layers sit above the clicked depth.
-    const clickedDepth = Number(hit.dataset.part?.replace('part-', ''));
-    // Only currently visible layers above the clicked depth are candidates;
-    // already hidden layers remain in layersStack and are not duplicated.
+    const layers = [...structure.querySelectorAll<HTMLElement>('.part-layer[data-part]')];
     const ordered = layers
       .filter((layer) => {
         const depth = Number(layer.dataset.part?.replace('part-', ''));
@@ -115,8 +127,8 @@ const extraLayers = [6, 7, 8].map((n) => ({
       })
       .sort((a, b) => Number(a.dataset.part?.replace('part-', '')) - Number(b.dataset.part?.replace('part-', '')));
     const hideNext = () => {
-      // Each invocation handles exactly one layer; the next invocation is
-      // scheduled only after the current layer has begun its transition.
+      // Called immediately and then once per second by the fold timer. Each
+      // call handles one layer so its transition can begin before the next.
       if (run !== stackRun) return;
       const next = ordered.shift();
       if (!next) {
@@ -138,7 +150,70 @@ const extraLayers = [6, 7, 8].map((n) => ({
     hideNext();
   }
 
-  function stackUnfolding(event: MouseEvent) {
+  /**
+   * Navigates to a layer selected by a chapter label. Hidden targets unfold
+   * until reached; visible targets use the shared folding routine.
+   * Called by chapterLabelClick after a right-side label is activated.
+   */
+  function selectPart(targetDepth: number) {
+    if (!structure) return;
+    const target = [...structure.querySelectorAll<HTMLElement>('.part-layer[data-part]')]
+            .find((layer) => Number(layer.dataset.part?.replace('part-', '')) === targetDepth);
+    if (!target) return;
+
+    if (target.classList.contains('is-obscured')) {
+      stackUnfolding(new MouseEvent('click'), targetDepth);
+    } else {
+      foldToLayer(targetDepth, target);
+    }
+  }
+
+  /**
+   * Converts a chapter-label anchor into an in-stack layer selection without
+   * allowing the browser to jump to the layer element or trigger page folding.
+   * Called by click listeners registered on .chapter-marker__link elements.
+   */
+  function chapterLabelClick(event: MouseEvent) {
+    const link = event.currentTarget as HTMLAnchorElement;
+    const match = link.getAttribute('href')?.match(/^#part-(\d+)$/);
+    if (!match) return;
+    event.preventDefault();
+    event.stopPropagation();
+    selectPart(Number(match[1]));
+  }
+
+  /**
+   * Finds the topmost opaque layer under a pointer click and delegates folding
+   * to the shared depth-based fold routine.
+   * Called by the stack click listener when artwork is clicked.
+   */
+  function stackFolding(event: MouseEvent) {
+    if (!clickContext) return;
+
+    const layers = [...(structure?.querySelectorAll<HTMLElement>('.part-layer[data-part]') ?? [])]
+      .sort((a, b) => Number.parseInt(getComputedStyle(b).zIndex || '0') - Number.parseInt(getComputedStyle(a).zIndex || '0'));
+    const hit = layers.find((layer) => {
+      const image = layer.querySelector<HTMLImageElement>('.part-layer__stack-texture, .part-layer__texture');
+      if (!image?.complete || !image.naturalWidth) return false;
+      const box = image.getBoundingClientRect();
+      if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) return false;
+      clickCanvas.width = image.naturalWidth; clickCanvas.height = image.naturalHeight;
+      clickContext.clearRect(0, 0, clickCanvas.width, clickCanvas.height); clickContext.drawImage(image, 0, 0);
+      const x = Math.floor((event.clientX - box.left) * image.naturalWidth / box.width);
+      const y = Math.floor((event.clientY - box.top) * image.naturalHeight / box.height);
+      return clickContext.getImageData(x, y, 1, 1).data[3] > 180;
+    });
+    if (!hit) return;
+    foldToLayer(Number(hit.dataset.part?.replace('part-', '')), hit);
+  }
+
+  /**
+   * Restores hidden layers from nearest to farthest. When targetDepth is set,
+   * restoration stops as soon as that specific layer becomes visible.
+   * Called by the document click listener for outside clicks, or by selectPart
+   * when its requested target is hidden.
+   */
+  function stackUnfolding(event: MouseEvent, targetDepth?: number) {
     // Unfolding cancels the current folding run, then restores queued layers
     // from nearest to farthest so the stack state changes predictably.
     // Clicks inside the stack belong to folding; only an outside click starts
@@ -160,7 +235,8 @@ const extraLayers = [6, 7, 8].map((n) => ({
     }
     //# Restore one queued layer at a time.
     const restoreNext = () => {
-      // Pop and reveal one layer, then continue after its one-second reveal.
+      // Called immediately and then once per second by the restore timer to
+      // reveal one queued layer at a time.
       if (run !== unfoldRun) return;
       const layer = layersStack.pop();
       if (!layer) return;
@@ -168,17 +244,27 @@ const extraLayers = [6, 7, 8].map((n) => ({
       layer.classList.remove('is-active');
       layer.classList.remove('is-obscured');
       window.setTimeout(() => {
-        layer.classList.remove('is-restoring');
+      layer.classList.remove('is-restoring');
+        if (targetDepth !== undefined && Number(layer.dataset.part?.replace('part-', '')) === targetDepth) {
+          layer.classList.add('is-active');
+          return;
+        }
         restoreNext();
       }, 1000);
     };
     restoreNext();
   }
 
+  /**
+   * Resolves pointer movement against rendered alpha pixels and marks the
+   * frontmost visible layer as hovered.
+   * Called continuously by pointermove events over the stack.
+   */
   function layerHover(event: PointerEvent) {
     // Resolve hover from rendered alpha pixels rather than rectangular image
     // bounds, while ignoring layers currently hidden by the fold state.
     // Sort overlapping layers by z-index, frontmost first.
+    if (!clickStack) return;
     const layers = [...clickStack.querySelectorAll<HTMLElement>('.part-layer[data-part]')].sort((a, b) => Number.parseInt(getComputedStyle(b).zIndex || '0') - Number.parseInt(getComputedStyle(a).zIndex || '0'));
     // Ignore hidden layers before sampling their image alpha.
     const hovered = layers.find((layer) => {
@@ -202,13 +288,25 @@ const extraLayers = [6, 7, 8].map((n) => ({
     if (hovered) hovered.classList.add('is-hovered');
   }
 
+  /**
+   * Removes the temporary hover state from every layer.
+   * Called when the pointer leaves the stack.
+   */
   function clearLayerHover() {
+    if (!clickStack) return;
     clickStack.querySelectorAll<HTMLElement>('.is-hovered').forEach((layer) => layer.classList.remove('is-hovered'));
   }
 
-  // Centralized listener registration.
-  control?.addEventListener('click', toggleControl);
+  // Centralized listener registration: these bindings define when each
+  // interaction function above is called and keep layer state changes here.
   clickStack?.addEventListener('click', stackFolding);
+  clickStack?.addEventListener('dblclick', (event) => event.preventDefault());
+  structure?.querySelectorAll<HTMLAnchorElement>('.chapter-marker__link').forEach((link) => {
+    link.addEventListener('click', chapterLabelClick);
+  });
+  structure?.querySelectorAll<HTMLButtonElement>('.chapter-control').forEach((button) => {
+    button.addEventListener('click', (event) => event.stopPropagation());
+  });
   document?.addEventListener('click', stackUnfolding);
   clickStack?.addEventListener('pointermove', layerHover);
   clickStack?.addEventListener('pointerleave', clearLayerHover);

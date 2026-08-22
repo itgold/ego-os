@@ -12,4 +12,14 @@ const chapters = defineCollection({
   }),
 });
 
-export const collections = { chapters };
+const parts = defineCollection({
+  type: 'content',
+  schema: z.object({
+    partId: z.string(),
+    activeNumber: z.string(),
+    activeTitle: z.string(),
+    activeQuote: z.array(z.string()),
+  }),
+});
+
+export const collections = { chapters, parts };
