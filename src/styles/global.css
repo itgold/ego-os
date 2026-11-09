@@ -20,6 +20,9 @@
   --color-muted: #676761;
   --color-rule: #d8d7d0;
   --color-focus: #245bb2;
+  --scrollbar-track: #f6eee2;
+  --scrollbar-thumb: #a77b68;
+  --scrollbar-thumb-hover: #9f432f;
   --font-body: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
   --font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
   --content-width: 42rem;
@@ -30,6 +33,32 @@
 * { box-sizing: border-box; }
 
 html { scroll-behavior: smooth; }
+
+/* Native scrolling, with the book's paper and clay palette. Leave high-contrast
+   modes to the browser so system scrollbar colors remain available. */
+@media (forced-colors: none) {
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  }
+
+  /* Use the richer native pseudo-elements where available; standard properties
+     otherwise take precedence over their rounded thumb and hover styling. */
+  @supports selector(::-webkit-scrollbar) {
+    html { scrollbar-width: auto; scrollbar-color: auto; }
+    html::-webkit-scrollbar { width: 12px; height: 12px; }
+    html::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+    html::-webkit-scrollbar-thumb {
+      min-height: 44px;
+      border: 3px solid var(--scrollbar-track);
+      border-radius: 999px;
+      background: var(--scrollbar-thumb);
+    }
+    html::-webkit-scrollbar-thumb:hover,
+    html::-webkit-scrollbar-thumb:active { background: var(--scrollbar-thumb-hover); }
+    html::-webkit-scrollbar-corner { background: var(--scrollbar-track); }
+  }
+}
 
 body {
   margin: 0;
