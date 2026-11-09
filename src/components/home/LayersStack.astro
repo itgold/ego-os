@@ -87,10 +87,119 @@ const parts = [
 <script>
   const structure = document.querySelector<HTMLElement>('[data-mind-structure]');
 
-  // Swap each layer's texture only on an explicit click.
   const clickStack = structure?.querySelector<HTMLElement>('.mind-structure__stack');
+
+  // The stack DOM is static; retain its elements and image references once.
+  const layers = [...(clickStack?.querySelectorAll<HTMLElement>('.part-layer[data-part]') ?? [])];
+  const layerImages = new Map(layers.map((layer) => [
+    layer,
+    layer.querySelector<HTMLImageElement>('.part-layer__stack-texture, .part-layer__texture'),
+  ]));
+  const layersByDepth = new Map(layers.map((layer) => [
+    Number(layer.dataset.part?.replace('part-', '')),
+    layer,
+  ]));
+  const depthOrderedLayers = [...layersByDepth.entries()]
+    .sort(([a], [b]) => a - b)
+    .map(([, layer]) => layer);
+  let frontToBackLayers: HTMLElement[] = [];
+
+  // Responsive styles change z-index; read it once per layer on resize only.
+  // Folding and hover classes do not change the stacking order.
+  function refreshLayerOrder() {
+    frontToBackLayers = layers
+      .map((layer) => ({ layer, zIndex: Number.parseInt(getComputedStyle(layer).zIndex || '0') || 0 }))
+      .sort((a, b) => b.zIndex - a.zIndex)
+      .map(({ layer }) => layer);
+  }
+  refreshLayerOrder();
+  window.addEventListener('resize', refreshLayerOrder);
   const clickCanvas = document.createElement('canvas');
   const clickContext = clickCanvas.getContext('2d', { willReadFrequently: true });
+
+  interface AlphaMask {
+    source: string;
+    width: number;
+    height: number;
+    alpha: Uint8Array;
+  }
+
+  // Keep only alpha bytes; the temporary RGBA buffer can be released after extraction.
+  const alphaMasks = new WeakMap<HTMLImageElement, AlphaMask>();
+
+  function getAlphaMask(image: HTMLImageElement): AlphaMask | undefined {
+    if (!clickContext || !image.complete || !image.naturalWidth || !image.naturalHeight) return;
+    const source = image.currentSrc || image.src;
+    const cached = alphaMasks.get(image);
+    if (cached?.source === source && cached.width === image.naturalWidth && cached.height === image.naturalHeight) {
+      return cached;
+    }
+
+    const width = image.naturalWidth;
+    const height = image.naturalHeight;
+    clickCanvas.width = width;
+    clickCanvas.height = height;
+    clickContext.drawImage(image, 0, 0);
+    const pixels = clickContext.getImageData(0, 0, width, height).data;
+    const alpha = new Uint8Array(width * height);
+    for (let i = 0; i < alpha.length; i += 1) {
+      alpha[i] = pixels[i * 4 + 3];
+    }
+    const mask = { source, width, height, alpha };
+    alphaMasks.set(image, mask);
+    return mask;
+  }
+
+  // Hover and clicks use the same cached silhouette with their existing thresholds.
+  function hitsLayer(layer: HTMLElement, clientX: number, clientY: number, threshold: number): boolean {
+    const image = layerImages.get(layer);
+    if (!image) return false;
+    const box = image.getBoundingClientRect();
+    if (!box.width || !box.height || clientX < box.left || clientX >= box.right || clientY < box.top || clientY >= box.bottom) return false;
+    const mask = getAlphaMask(image);
+    if (!mask) return false;
+    const x = Math.floor((clientX - box.left) * mask.width / box.width);
+    const y = Math.floor((clientY - box.top) * mask.height / box.height);
+    return mask.alpha[y * mask.width + x] > threshold;
+  }
+
+  // Remove fully folded layers from rendering, including their animated SVG images.
+  const suspensionTimers = new Map<HTMLElement, number>();
+
+  function suspendLayer(layer: HTMLElement) {
+    const pending = suspensionTimers.get(layer);
+    if (pending !== undefined) window.clearTimeout(pending);
+    layer.classList.add('is-obscured');
+    // Fallback for transitions that do not emit transitionend (for example in a background tab).
+    suspensionTimers.set(layer, window.setTimeout(() => finishLayerSuspension(layer), 2100));
+  }
+
+  function finishLayerSuspension(layer: HTMLElement) {
+    const pending = suspensionTimers.get(layer);
+    if (pending !== undefined) window.clearTimeout(pending);
+    suspensionTimers.delete(layer);
+    if (layer.classList.contains('is-obscured')) layer.classList.add('is-suspended');
+  }
+
+  function resumeLayer(layer: HTMLElement) {
+    const pending = suspensionTimers.get(layer);
+    if (pending !== undefined) window.clearTimeout(pending);
+    suspensionTimers.delete(layer);
+    if (layer.classList.contains('is-suspended')) {
+      layer.classList.remove('is-suspended');
+      // Establish the transparent starting state before beginning the fade-in.
+      layer.getBoundingClientRect();
+    }
+    layer.classList.remove('is-obscured');
+  }
+
+  layers.forEach((layer) => {
+    layer.addEventListener('transitionend', (event) => {
+      if (event.target === layer && event.propertyName === 'opacity' && getComputedStyle(layer).opacity === '0') {
+        finishLayerSuspension(layer);
+      }
+    });
+  });
 
   // Layers currently hidden by folding, restored in reverse order.
   let layersStack: HTMLElement[] = [];
@@ -115,14 +224,12 @@ const parts = [
 
     unfoldRun += 1;
     const run = ++stackRun;
-    const layers = [...structure.querySelectorAll<HTMLElement>('.part-layer[data-part]')];
-    const ordered = layers
+    const ordered = depthOrderedLayers
       .filter((layer) => {
         const depth = Number(layer.dataset.part?.replace('part-', ''));
         const visible = getComputedStyle(layer).opacity !== '0' && !layer.classList.contains('is-obscured');
         return depth < clickedDepth && visible;
-      })
-      .sort((a, b) => Number(a.dataset.part?.replace('part-', '')) - Number(b.dataset.part?.replace('part-', '')));
+      });
     const hideNext = () => {
       // Called immediately and then once per second by the fold timer. Each
       // call handles one layer so its transition can begin before the next.
@@ -140,7 +247,7 @@ const parts = [
       if (nextDepth === clickedDepth - 1) hit.classList.add('is-active');
         // The layer is now hidden and no longer active.
         next.classList.remove('is-active');
-        next.classList.add('is-obscured');
+        suspendLayer(next);
         stackTimer = window.setTimeout(hideNext, 1000);
       }
     };
@@ -154,8 +261,7 @@ const parts = [
    */
   function selectPart(targetDepth: number) {
     if (!structure) return;
-    const target = [...structure.querySelectorAll<HTMLElement>('.part-layer[data-part]')]
-            .find((layer) => Number(layer.dataset.part?.replace('part-', '')) === targetDepth);
+    const target = layersByDepth.get(targetDepth);
     if (!target) return;
 
     if (target.classList.contains('is-obscured')) {
@@ -187,19 +293,7 @@ const parts = [
   function stackFolding(event: MouseEvent) {
     if (!clickContext) return;
 
-    const layers = [...(structure?.querySelectorAll<HTMLElement>('.part-layer[data-part]') ?? [])]
-      .sort((a, b) => Number.parseInt(getComputedStyle(b).zIndex || '0') - Number.parseInt(getComputedStyle(a).zIndex || '0'));
-    const hit = layers.find((layer) => {
-      const image = layer.querySelector<HTMLImageElement>('.part-layer__stack-texture, .part-layer__texture');
-      if (!image?.complete || !image.naturalWidth) return false;
-      const box = image.getBoundingClientRect();
-      if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) return false;
-      clickCanvas.width = image.naturalWidth; clickCanvas.height = image.naturalHeight;
-      clickContext.clearRect(0, 0, clickCanvas.width, clickCanvas.height); clickContext.drawImage(image, 0, 0);
-      const x = Math.floor((event.clientX - box.left) * image.naturalWidth / box.width);
-      const y = Math.floor((event.clientY - box.top) * image.naturalHeight / box.height);
-      return clickContext.getImageData(x, y, 1, 1).data[3] > 180;
-    });
+    const hit = frontToBackLayers.find((layer) => hitsLayer(layer, event.clientX, event.clientY, 180));
     if (!hit) return;
     if (hit.classList.contains('part-layer--active')) {
       const destination = hit.querySelector<HTMLAnchorElement>('.part-layer__label')?.href;
@@ -224,7 +318,7 @@ const parts = [
     const run = ++unfoldRun;
 
     // Unfolding starts from the current active state, not the default state.
-    structure.querySelectorAll<HTMLElement>('.part-layer.is-active').forEach((layer) => layer.classList.remove('is-active'));
+    layers.forEach((layer) => layer.classList.remove('is-active'));
     // Invalidate the active folding run so it can no longer mutate the stack.
     stackRun += 1;
 
@@ -244,7 +338,7 @@ const parts = [
       if (!layer) return;
       layer.classList.add('is-restoring');
       layer.classList.remove('is-active');
-      layer.classList.remove('is-obscured');
+      resumeLayer(layer);
       window.setTimeout(() => {
       layer.classList.remove('is-restoring');
         if (targetDepth !== undefined && Number(layer.dataset.part?.replace('part-', '')) === targetDepth) {
@@ -257,39 +351,43 @@ const parts = [
     restoreNext();
   }
 
+  let hoveredLayer: HTMLElement | undefined;
+  let hoverFrame: number | undefined;
+  let hoverPosition: { clientX: number; clientY: number } | undefined;
+
+  // Coalesce pointer events into one hit test per frame using the latest position.
+  function scheduleLayerHover(event: PointerEvent) {
+    hoverPosition = { clientX: event.clientX, clientY: event.clientY };
+    if (hoverFrame !== undefined) return;
+    hoverFrame = window.requestAnimationFrame(() => {
+      hoverFrame = undefined;
+      const position = hoverPosition;
+      hoverPosition = undefined;
+      if (position) layerHover(position);
+    });
+  }
+
   /**
-   * Resolves pointer movement against rendered alpha pixels and marks the
-   * frontmost visible layer as hovered.
-   * Called continuously by pointermove events over the stack.
+   * Resolves the latest pointer position against cached alpha pixels and marks
+   * the frontmost visible layer as hovered. Called once per requested frame.
    */
-  function layerHover(event: PointerEvent) {
+  function layerHover(event: { clientX: number; clientY: number }) {
     // Resolve hover from rendered alpha pixels rather than rectangular image
     // bounds, while ignoring layers currently hidden by the fold state.
-    // Sort overlapping layers by z-index, frontmost first.
+    // Use the cached front-to-back order.
     if (!clickStack) return;
-    const layers = [...clickStack.querySelectorAll<HTMLElement>('.part-layer[data-part]')].sort((a, b) => Number.parseInt(getComputedStyle(b).zIndex || '0') - Number.parseInt(getComputedStyle(a).zIndex || '0'));
     // Ignore hidden layers before sampling their image alpha.
-    const hovered = layers.find((layer) => {
+    const hovered = frontToBackLayers.find((layer) => {
       if (layer.classList.contains('is-obscured') || getComputedStyle(layer).opacity === '0') return false;
-      const image = layer.querySelector<HTMLImageElement>('.part-layer__stack-texture, .part-layer__texture');
-      if (!image?.complete || !image.naturalWidth) return false;
-      const box = image.getBoundingClientRect();
-      if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) return false;
-      // Draw the current texture into the shared canvas for alpha sampling.
-      clickCanvas.width = image.naturalWidth; clickCanvas.height = image.naturalHeight;
-      clickContext?.clearRect(0, 0, clickCanvas.width, clickCanvas.height); clickContext?.drawImage(image, 0, 0);
-      const x = Math.floor((event.clientX - box.left) * image.naturalWidth / box.width);
-      const y = Math.floor((event.clientY - box.top) * image.naturalHeight / box.height);
-      // Only opaque pixels count as interactive silhouette.
-      return (clickContext?.getImageData(x, y, 1, 1).data[3] ?? 0) > 24;
+      return hitsLayer(layer, event.clientX, event.clientY, 24);
     });
     // Clear the previous hover state before applying the new one.
-    clickStack.querySelectorAll<HTMLElement>('.is-hovered').forEach((layer) => {
-      if (layer !== hovered) {
-        layer.classList.remove('is-hovered');
-        layer.style.cursor = 'default';
-      }
-    });
+    if (hoveredLayer === hovered) return;
+    if (hoveredLayer) {
+      hoveredLayer.classList.remove('is-hovered');
+      hoveredLayer.style.cursor = 'default';
+    }
+    hoveredLayer = hovered;
     clickStack.style.cursor = hovered ? 'pointer' : 'default';
     if (hovered) {
       hovered.classList.add('is-hovered');
@@ -302,12 +400,18 @@ const parts = [
    * Called when the pointer leaves the stack.
    */
   function clearLayerHover() {
+    if (hoverFrame !== undefined) {
+      window.cancelAnimationFrame(hoverFrame);
+      hoverFrame = undefined;
+    }
+    hoverPosition = undefined;
     if (!clickStack) return;
     clickStack.style.cursor = 'default';
-    clickStack.querySelectorAll<HTMLElement>('.is-hovered').forEach((layer) => {
-      layer.classList.remove('is-hovered');
-      layer.style.cursor = 'default';
-    });
+    if (hoveredLayer) {
+      hoveredLayer.classList.remove('is-hovered');
+      hoveredLayer.style.cursor = 'default';
+      hoveredLayer = undefined;
+    }
   }
 
   // Centralized listener registration: these bindings define when each
@@ -318,7 +422,7 @@ const parts = [
     link.addEventListener('click', chapterLabelClick);
   });
   document?.addEventListener('click', stackUnfolding);
-  clickStack?.addEventListener('pointermove', layerHover);
+  clickStack?.addEventListener('pointermove', scheduleLayerHover);
   clickStack?.addEventListener('pointerleave', clearLayerHover);
 
 </script>

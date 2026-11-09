@@ -399,6 +399,8 @@ body:has(.homepage-shell) {
   transition: opacity 2000ms cubic-bezier(.22, .62, .24, 1);
   transition-delay: 0s;
 }
+/* Applied after the fold fade; restored before the unfold fade starts. */
+.part-layer.is-suspended { display: none !important; }
 .part-layer.is-restoring { transition: opacity 1000ms cubic-bezier(.22, .62, .24, 1); }
 
 /* Reveal the stack in depth order when returning from a deeper layer. */

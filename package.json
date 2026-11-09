@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
+    "assets:shadows": "node scripts/render-layer-shadows.mjs",
     "build": "astro check && astro build",
     "preview": "astro preview"
   },
