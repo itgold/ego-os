@@ -1,11 +1,12 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import BookNavigation from '../../components/BookNavigation.astro';
 import BookHeader from '../../components/BookHeader.astro';
 import { bookParts } from '../../data/bookParts';
 
 export function getStaticPaths() {
-  return bookParts.filter((part) => part.pageType !== 'content').map((part) => ({
-    params: { slug: part.href.split('/').filter(Boolean).at(-1) },
+  return bookParts.filter((part) => part.pageType === 'overview').map((part) => ({
+    params: { slug: part.slug },
     props: { part },
   }));
 }
@@ -14,16 +15,19 @@ const { part } = Astro.props;
 ---
 
 <BaseLayout title={`${part.number} — ${part.title} — Ego OS`} description={`Explore ${part.title}, ${part.number} of Ego OS.`}>
-  <BookHeader currentChapter={part.number} />
+  <BookHeader currentChapter={`Section ${part.number}`} />
   <main id="main-content" class="part-overview">
-    <a class="part-overview__back" href="/#parts">← All five parts</a>
-    <p class="eyebrow">{part.number}</p>
+    <a class="part-overview__back" href="/#parts">← All sections</a>
+    <p class="eyebrow">Section {part.number}</p>
     <h1>{part.title}</h1>
-    <p class="part-overview__intro">The chapters in this part will be published here as the book develops.</p>
-    <ol>
+    <p class="part-overview__intro">{part.chapters.length > 0
+      ? 'The chapters in this section will be published here as the book develops.'
+      : 'This section will be published here as the book develops.'}</p>
+    {part.chapters.length > 0 && <ol>
       {part.chapters.map((chapter, index) => (
         <li><span>{String(index + 1).padStart(2, '0')}</span><h2>{chapter}</h2></li>
       ))}
-    </ol>
+    </ol>}
+    <BookNavigation partId={part.id} />
   </main>
 </BaseLayout>

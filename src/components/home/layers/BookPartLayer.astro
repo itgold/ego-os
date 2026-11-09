@@ -1,9 +1,9 @@
 ---
-import type { BookPart } from '../../../data/bookParts';
+import type { HomepageLayer } from '../../../presentation/homepage';
 import { Image } from 'astro:assets';
 
 interface Props {
-  part: BookPart;
+  part: HomepageLayer;
   index: number;
 }
 
@@ -31,6 +31,7 @@ const stackAsset = part.asset.replace('-texture-stack.png', '-texture.png');
         height="853"
         alt=""
         loading="eager"
+        fetchpriority={part.defaultLayer ? 'high' : 'auto'}
       />
       {part.id === 'part-02' && <img class="part-layer__particle-grid" src="/assets/overlays/layer-02-particle-grid.svg" width="1163" height="853" alt="" aria-hidden="true" />}
       {part.id === 'part-03' && <img class="part-layer__particle-grid" src="/assets/overlays/layer-03-particles.svg" width="1163" height="853" alt="" aria-hidden="true" />}

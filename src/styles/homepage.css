@@ -1,4 +1,19 @@
-@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&display=swap");
+/* Local, preloaded variable fonts avoid the external CSS request and late reflow. */
+@font-face {
+  font-family: 'Cormorant Garamond';
+  src: url('/fonts/cormorant-garamond-latin-normal.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: optional;
+}
+
+@font-face {
+  font-family: 'Cormorant Garamond';
+  src: url('/fonts/cormorant-garamond-latin-italic.woff2') format('woff2');
+  font-style: italic;
+  font-weight: 400 600;
+  font-display: optional;
+}
 
 /* Homepage tokens: display typography for editorial content, interface
    typography for navigation and controls. */
@@ -372,7 +387,8 @@ body:has(.homepage-shell) {
   transition: none;
 }
 .part-layer--active::before { display:none; }
-.part-layer__alpha-shadow { position:absolute; z-index:0; inset:0; width:100%; height:100%; overflow:visible; pointer-events:none; }
+.part-layer__alpha-shadow { visibility:hidden; position:absolute; z-index:0; inset:0; width:100%; height:100%; overflow:visible; pointer-events:none; }
+.has-decoded-textures .part-layer__alpha-shadow { visibility:visible; }
 .part-layer--active .part-layer__surface { z-index:1; }
 
 .part-layer__content { position: absolute; inset: 0; transition: transform var(--duration-paper) var(--ease-paper); }

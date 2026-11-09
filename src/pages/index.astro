@@ -1,4 +1,5 @@
 ---
+import { homepage } from '../data/homepage';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/home/Header.astro';
 import EgoTitle from '../components/home/EgoTitle.astro';
@@ -6,13 +7,17 @@ import LayersStack from '../components/home/LayersStack.astro';
 import '../styles/homepage.css';
 ---
 
-<BaseLayout title="Ego OS — An illustrated model of the mind" description="An interactive illustrated book about the systems that make us who we are.">
+<BaseLayout title={homepage.browserTitle} description={homepage.description}>
+  <Fragment slot="head">
+    <link rel="preload" href="/fonts/cormorant-garamond-latin-normal.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
+    <link rel="preload" href="/fonts/cormorant-garamond-latin-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
+  </Fragment>
   <div class="homepage-shell">
     <Header />
     <main id="main-content" class="homepage-main">
       <EgoTitle />
       <LayersStack />
     </main>
-    <p class="edition-mark" aria-hidden="true">A field guide to the architecture of self · 2026</p>
+    <p class="edition-mark" aria-hidden="true">{homepage.editionMark}</p>
   </div>
 </BaseLayout>

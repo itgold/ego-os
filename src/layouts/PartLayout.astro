@@ -2,6 +2,8 @@
 import type { CollectionEntry } from 'astro:content';
 import BaseLayout from './BaseLayout.astro';
 import BookHeader from '../components/BookHeader.astro';
+import { bookParts } from '../data/bookParts';
+import BookNavigation from '../components/BookNavigation.astro';
 import ChapterNavigation from '../components/ChapterNavigation.astro';
 
 interface Props {
@@ -11,6 +13,7 @@ interface Props {
 }
 
 const { chapter, previous, next } = Astro.props;
+const part = bookParts.find((part) => part.contentSlug === chapter.slug);
 const chapterLabel = `Chapter ${String(chapter.data.chapterNumber).padStart(2, '0')}`;
 ---
 
@@ -25,6 +28,6 @@ const chapterLabel = `Chapter ${String(chapter.data.chapterNumber).padStart(2, '
     <article class="chapter__content">
       <slot />
     </article>
-    <ChapterNavigation {previous} {next} />
+    {part ? <BookNavigation partId={part.id} /> : <ChapterNavigation {previous} {next} />}
   </main>
 </BaseLayout>

@@ -1,81 +1,45 @@
+/** Canonical reading order, titles, routes, and chapter lists for the entire book. */
 export interface BookPart {
   id: string;
   number: string;
   title: string;
+  slug: string;
   href: string;
-  asset: string;
-  mask: string;
-  color: string;
-  labelY: string;
-  defaultLayer?: boolean;
-  pageType?: 'content' | 'overview';
+  pageType: 'content' | 'overview';
+  contentSlug?: string;
   chapters: string[];
 }
 
-export const bookParts: BookPart[] = [
-  {
-    id: 'part-01',
-    number: 'Part I',
-    title: 'Foundations',
-    href: '/book/introduction/',
-    asset: '/assets/home-layers/layer-01-texture-stack.png',
-    mask: '/assets/masks/part-01-mask.svg',
-    color: '#eee4d2',
-    labelY: '31%',
-    defaultLayer: true,
-    pageType: 'content',
-    chapters: [
-      'Brain Is a Computer',
-      'Ego Is the Mind',
-      'Three Models of the Same System',
-    ],
-  },
-  {
-    id: 'part-02',
-    number: 'Part II',
-    title: 'Ego OS Architecture',
-    href: '/book/ego-os-architecture/',
-    asset: '/assets/home-layers/layer-02-texture-stack.png',
-    mask: '/assets/masks/part-02-mask.svg',
-    color: '#879084',
-    labelY: '43%',
-    chapters: ['Automated Layer', 'Unconscious Layer', 'Conscious Layer'],
-  },
-  {
-    id: 'part-03',
-    number: 'Part III',
-    title: 'The Self and Its World',
-    href: '/book/self-and-world/',
-    asset: '/assets/home-layers/layer-03-texture-stack.png',
-    mask: '/assets/masks/part-03-mask.svg',
-    color: '#b09054',
-    labelY: '55%',
-    chapters: ['Self and Identity', 'Boundaries'],
-  },
-  {
-    id: 'part-04',
-    number: 'Part IV',
-    title: 'Control and Behavior',
-    href: '/book/control-and-behavior/',
-    asset: '/assets/home-layers/layer-04-texture-stack.png',
-    mask: '/assets/masks/part-04-mask.svg',
-    color: '#927e89',
-    labelY: '67%',
-    chapters: ['Goals and Attention', 'Conflict and Ambivalence', 'Action and Learning'],
-  },
-  {
-    id: 'part-05',
-    number: 'Part V',
-    title: 'System Resources',
-    href: '/book/system-resources/',
-    asset: '/assets/home-layers/layer-05-texture-stack.png',
-    mask: '/assets/masks/part-05-mask.svg',
-    color: '#27343c',
-    labelY: '79%',
-    chapters: ['Fatigue and Rest'],
-  },
+type PartDefinition = Omit<BookPart, 'number' | 'href' | 'pageType'> & { pageType?: BookPart['pageType'] };
+
+const definitions: PartDefinition[] = [
+  { id: 'part-01', title: 'Introduction', slug: 'introduction', pageType: 'content', contentSlug: '01-introduction', chapters: [] },
+  { id: 'part-02', title: 'Foundations', slug: 'foundations', chapters: ['Brain Is a Computer', 'Ego Is the Mind', 'Three Models of the Same System'] },
+  { id: 'part-03', title: 'Ego OS Architecture', slug: 'ego-os-architecture', chapters: ['Automated Layer', 'Unconscious Layer', 'Conscious Layer'] },
+  { id: 'part-04', title: 'The Self and Its World', slug: 'self-and-world', chapters: ['Self and Identity', 'Boundaries'] },
+  { id: 'part-05', title: 'Control and Behavior', slug: 'control-and-behavior', chapters: ['Goals and Attention', 'Conflict and Ambivalence', 'Action and Learning'] },
+  { id: 'part-06', title: 'System Resources', slug: 'system-resources', chapters: ['Fatigue and Rest'] },
+  { id: 'part-07', title: 'Conclusion', slug: 'conclusion', chapters: [] },
 ];
 
+export const bookParts: BookPart[] = definitions.map((part, index) => ({
+  ...part,
+  number: String(index + 1).padStart(2, '0'),
+  href: `/book/${part.slug}/`,
+  pageType: part.pageType ?? 'overview',
+}));
+
 export function getBookPart(slug: string) {
-  return bookParts.find((part) => part.href === `/book/${slug}/`);
+  return bookParts.find((part) => part.slug === slug);
+}
+
+export function getBookPartById(id: string): BookPart {
+  const part = bookParts.find((part) => part.id === id);
+  if (!part) throw new Error(`Unknown book section: ${id}`);
+  return part;
+}
+
+export function getBookNeighbors(id: string) {
+  const index = bookParts.indexOf(getBookPartById(id));
+  return { previous: bookParts[index - 1], next: bookParts[index + 1] };
 }

@@ -1,11 +1,15 @@
+---
+import { homepage } from '../../data/homepage';
+---
+
 <header class="ego-title" id="about">
-  <h1>Ego OS</h1>
-  <p class="ego-title__subtitle">An interactive book about the architecture of self.</p>
+  <h1>{homepage.title}</h1>
+  <p class="ego-title__subtitle">{homepage.subtitle}</p>
   <div class="ego-title__introduction">
-    <h2>The self is a system we can learn to understand.</h2>
-    <p class="ego-title__description">Ego OS explores how the mind constructs reality, forms a sense of “I,” and produces behavior through patterns that often run outside awareness, and where conscious choice fits within it.</p>
-    <a class="ego-title__begin" href="/book/introduction/">
-      <span>Begin reading</span>
+    <h2>{homepage.heading}</h2>
+    <p class="ego-title__description">{homepage.introduction}</p>
+    <a class="ego-title__begin" href={homepage.readingLink.href}>
+      <span>{homepage.readingLink.label}</span>
       <svg viewBox="0 0 24 16" width="24" height="16" fill="none" aria-hidden="true">
         <path d="M1 8h21M16 2l6 6-6 6" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" />
       </svg>

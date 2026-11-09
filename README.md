@@ -326,3 +326,17 @@ draft: true
 
 Chapter text goes here.
 ```
+
+## Editing homepage content
+
+- `src/data/homepage.ts`: browser title, SEO description, hero text, reading link, edition mark, and accessibility labels.
+- `src/data/bookParts.ts`: canonical section order, titles, routes, and chapter lists. Numbers are derived from the order.
+- `src/content/parts/*.md`: section quotes, linked to the book structure by `partId`.
+- `src/presentation/homepage.ts`: section card coordinates, light/dark themes, marker placement, and title line breaks, keyed by `partId`.
+- `src/components/home/` and `src/styles/homepage.css`: markup, interactions, typography, and layout.
+
+Keep existing `partId` values stable: they connect the canonical book structure to artwork, quotes, and presentation. The homepage cards, labels, reading button, section pages, and previous/next section navigation all use `src/data/bookParts.ts`. Existing section URLs remain stable when reordered because slugs are explicit. The eighth artwork layer is decorative and does not appear in navigation.
+
+To add a section, add its definition in `src/data/bookParts.ts`, quote file in `src/content/parts/`, and artwork/presentation settings in `src/presentation/homepage.ts`. Overview pages are generated automatically. Sections with manuscript content specify `pageType: 'content'` and a `contentSlug`; their page renders that MDX entry. Missing or unknown homepage section copy fails the build.
+
+The large outline above describes the planned manuscript's five thematic parts. The live website includes Introduction and Conclusion around those parts, producing seven navigable sections.

@@ -1,23 +1,27 @@
 ---
 import type { CollectionEntry } from 'astro:content';
+import { getBookPartById } from '../../../data/bookParts';
+import { getPartPresentation } from '../../../presentation/homepage';
 
 interface Props {
   activeCopy: CollectionEntry<'parts'>['data'];
 }
 
 const { activeCopy } = Astro.props;
+const part = getBookPartById(activeCopy.partId);
+const { copy: position, theme } = getPartPresentation(activeCopy.partId);
 const positionStyle = [
-  activeCopy.activeCopyPosition?.x && `--active-copy-x: ${activeCopy.activeCopyPosition.x}`,
-  activeCopy.activeCopyPosition?.y && `--active-copy-y: ${activeCopy.activeCopyPosition.y}`,
-  activeCopy.activeCopyPosition?.mobileX && `--active-copy-mobile-x: ${activeCopy.activeCopyPosition.mobileX}`,
-  activeCopy.activeCopyPosition?.mobileY && `--active-copy-mobile-y: ${activeCopy.activeCopyPosition.mobileY}`,
+  position?.x && `--active-copy-x: ${position.x}`,
+  position?.y && `--active-copy-y: ${position.y}`,
+  position?.mobileX && `--active-copy-mobile-x: ${position.mobileX}`,
+  position?.mobileY && `--active-copy-mobile-y: ${position.mobileY}`,
 ].filter(Boolean).join('; ');
 ---
 
-<section class:list={['active-part-copy', `active-part-copy--${activeCopy.activeCopyTheme}`]} style={positionStyle || undefined} aria-labelledby={`chapter-${activeCopy.partId}-title`}>
+<section class:list={['active-part-copy', `active-part-copy--${theme}`]} style={positionStyle || undefined} aria-labelledby={`chapter-${activeCopy.partId}-title`}>
   <div class="active-part-copy__heading">
-    <span class="active-part-copy__number">{activeCopy.activeNumber}</span>
-    <h3 id={`chapter-${activeCopy.partId}-title`} aria-label={activeCopy.activeTitle}>{activeCopy.activeTitle}</h3>
+    <span class="active-part-copy__number">{part.number}</span>
+    <h3 id={`chapter-${activeCopy.partId}-title`} aria-label={part.title}>{part.title}</h3>
   </div>
   <div class="active-part-copy__rule" aria-hidden="true"><span></span></div>
   <p>{activeCopy.activeQuote.map((line, index) => <>{index > 0 && <br />}{line}</>)}</p>

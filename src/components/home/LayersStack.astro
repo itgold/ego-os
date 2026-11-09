@@ -1,4 +1,6 @@
 ---
+import { homepage } from '../../data/homepage';
+import { homepageLayers, getPartPresentation } from '../../presentation/homepage';
 import { bookParts } from '../../data/bookParts';
 import { getCollection } from 'astro:content';
 import BookPartLayer from './layers/BookPartLayer.astro';
@@ -6,42 +8,35 @@ import Layer01Artwork from './layers/Layer01Artwork.astro';
 import ActiveBookPartCopy from './layers/ActiveBookPartCopy.astro';
 import { Image } from 'astro:assets';
 
-const layerOrder = [...bookParts].reverse();
+const layerOrder = [...homepageLayers].reverse();
 const partContent = await getCollection('parts');
 const activeCopyByPart = new Map(partContent.map(({ data }) => [data.partId, data]));
-const extraLayers = [6, 7, 8].map((n) => ({
-  id: `part-0${n}`, number: `Layer ${n}`, title: '', href: '#',
-  asset: `/assets/home-layers/layer-0${n}-texture-stack.png`, mask: '',
-  color: '#53616a', labelY: '90%', chapters: [],
-}));
+// Fail the build if section copy is missing or references a removed section.
+for (const part of bookParts) {
+  if (!activeCopyByPart.has(part.id)) throw new Error(`Missing homepage copy for ${part.id}`);
+}
+for (const { data } of partContent) {
+  if (!bookParts.some((part) => part.id === data.partId)) throw new Error(`Unknown homepage section ${data.partId}`);
+}
 
-const parts = [
-  { number: '01', titleLines: ['Introduction'], y: '20%', anchor: '93%', line: 60 },
-  { number: '02', titleLines: ['Foundations'], y: '29.8%', anchor: '94%', line: 80 },
-  { number: '03', titleLines: ['Ego OS', 'Architecture'], y: '40.7%', anchor: '96%', line: 72 },
-  { number: '04', titleLines: ['The Self', 'and Its World'], y: '50.4%', anchor: '97%', line: 70 },
-  { number: '05', titleLines: ['Control', 'and Behavior'], y: '62%', anchor: '97%', line: 71 },
-  { number: '06', titleLines: ['System Resources'], y: '71%', anchor: '97%', line: 61 },
-  { number: '07', titleLines: ['Conclusion'], y: '80%', anchor: '97%', line: 66 },
-];
+const parts = bookParts.map((part) => {
+  const marker = getPartPresentation(part.id).marker;
+  const words = part.title.split(' ');
+  const titleLines = marker.breakAfterWords
+    ? [words.slice(0, marker.breakAfterWords).join(' '), words.slice(marker.breakAfterWords).join(' ')]
+    : [part.title];
+  return { ...part, titleLines, ...marker };
+});
 ---
 
 <section class="mind-structure" id="parts" aria-labelledby="structure-title" data-mind-structure>
-  <h2 id="structure-title" class="sr-only">The five parts of Ego OS</h2>
+  <h2 id="structure-title" class="sr-only">{homepage.labels.structure}</h2>
 
   <div class="mind-structure__stack">
-    {extraLayers.map((part, index) => {
-      const activeCopy = activeCopyByPart.get(part.id);
-      return (
-        <BookPartLayer part={part} index={index + 5}>
-          {activeCopy && <ActiveBookPartCopy activeCopy={activeCopy} />}
-        </BookPartLayer>
-      );
-    })}
     {layerOrder.map((part) => {
       const activeCopy = activeCopyByPart.get(part.id);
       return (
-      <BookPartLayer part={part} index={bookParts.indexOf(part)}>
+      <BookPartLayer part={part} index={homepageLayers.indexOf(part)}>
         {part.defaultLayer && (
           <>
             <Image class="part-layer__stack-texture" src="/assets/home-layers/layer-01-texture.png" width={1163} height={853} alt="" aria-hidden="true" loading="eager" />
@@ -56,10 +51,10 @@ const parts = [
     })}
   </div>
 
-  <ol class="chapter-markers" aria-label="Parts">
-    {parts.map((part, index) => (
+  <ol class="chapter-markers" aria-label={homepage.labels.parts}>
+    {parts.map((part) => (
       <li class="chapter-marker" style={`--chapter-y: ${part.y}; --chapter-anchor: ${part.anchor}; --chapter-line: ${part.line}px;`}>
-        <a class="chapter-marker__link" href={`#part-0${index + 1}`} aria-label={`${part.number} ${part.titleLines.join(' ')}`}>
+        <a class="chapter-marker__link" href={`#${part.id}`} aria-label={`${part.number} ${part.title}`}>
           <span class="chapter-marker__dot" aria-hidden="true"></span>
           <span class="chapter-marker__line" aria-hidden="true"></span>
           <span class="chapter-marker__label">
@@ -75,9 +70,9 @@ const parts = [
     ))}
   </ol>
 
-  <ol class="depth-key" aria-label="Reading depth">
+  <ol class="depth-key" aria-label={homepage.labels.readingDepth}>
     {bookParts.map((part) => (
-      <li aria-current={part.defaultLayer ? 'step' : undefined}>
+      <li aria-current={part === bookParts[0] ? 'step' : undefined}>
         <a href={part.href}><span>{`${part.number} — `}</span><span>{part.title}</span></a>
       </li>
     ))}
@@ -114,6 +109,24 @@ const parts = [
   }
   refreshLayerOrder();
   window.addEventListener('resize', refreshLayerOrder);
+  // Small shadow assets can load before the artwork and briefly form a black stack.
+  // Decode every base texture before revealing any shadows, including lower layers.
+  async function revealStackShadows() {
+    const textures = layers.map((layer) => layer.querySelector<HTMLImageElement>('.part-layer__texture'));
+    const ready = await Promise.all(textures.map(async (texture) => {
+      if (!texture) return false;
+      try {
+        await texture.decode();
+        return true;
+      } catch {
+        // Missing artwork must never leave its opaque shadow exposed.
+        return false;
+      }
+    }));
+    if (ready.length > 0 && ready.every(Boolean)) structure?.classList.add('has-decoded-textures');
+  }
+  void revealStackShadows();
+
   const clickCanvas = document.createElement('canvas');
   const clickContext = clickCanvas.getContext('2d', { willReadFrequently: true });
 
@@ -295,9 +308,10 @@ const parts = [
 
     const hit = frontToBackLayers.find((layer) => hitsLayer(layer, event.clientX, event.clientY, 180));
     if (!hit) return;
-    if (hit.classList.contains('part-layer--active')) {
-      const destination = hit.querySelector<HTMLAnchorElement>('.part-layer__label')?.href;
-      if (destination) window.location.assign(destination);
+    // Every section card follows the canonical route once it is open.
+    const destination = hit.querySelector<HTMLAnchorElement>('.part-layer__label')?.getAttribute('href');
+    if (hit.classList.contains('is-active') && destination && destination !== '#') {
+      window.location.assign(destination);
       return;
     }
     foldToLayer(Number(hit.dataset.part?.replace('part-', '')), hit);

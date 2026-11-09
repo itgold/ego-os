@@ -1,7 +1,7 @@
 @font-face {
   font-family: 'Bodoni Moda';
   src: url('/fonts/bodoni-moda-latin.woff2') format('woff2');
-  font-display: swap;
+  font-display: optional;
   font-style: normal;
   font-weight: 400;
 }
@@ -9,7 +9,7 @@
 @font-face {
   font-family: 'DM Sans';
   src: url('/fonts/dm-sans-400.woff2') format('woff2');
-  font-display: swap;
+  font-display: optional;
   font-style: normal;
   font-weight: 400;
 }

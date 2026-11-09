@@ -1,0 +1,17 @@
+---
+import { getBookNeighbors } from '../data/bookParts';
+
+interface Props {
+  partId: string;
+}
+
+const { previous, next } = getBookNeighbors(Astro.props.partId);
+---
+
+<nav class="chapter-navigation" aria-label="Book sections">
+  <a class="chapter-navigation__contents" href="/#parts">Table of contents</a>
+  <div class="chapter-navigation__links">
+    {previous ? <a href={previous.href}>← {previous.title}</a> : <span />}
+    {next ? <a href={next.href}>{next.title} →</a> : <span />}
+  </div>
+</nav>
