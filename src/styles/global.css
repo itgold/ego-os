@@ -1,3 +1,20 @@
+/* Local, preloaded variable fonts avoid the external CSS request and late reflow. */
+@font-face {
+  font-family: 'Cormorant Garamond';
+  src: url('/fonts/cormorant-garamond-latin-normal.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: optional;
+}
+
+@font-face {
+  font-family: 'Cormorant Garamond';
+  src: url('/fonts/cormorant-garamond-latin-italic.woff2') format('woff2');
+  font-style: italic;
+  font-weight: 400 600;
+  font-display: optional;
+}
+
 @font-face {
   font-family: 'Bodoni Moda';
   src: url('/fonts/bodoni-moda-latin.woff2') format('woff2');
@@ -23,9 +40,9 @@
   --scrollbar-track: #f6eee2;
   --scrollbar-thumb: #a77b68;
   --scrollbar-thumb-hover: #9f432f;
-  --font-body: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+  --font-body: 'Cormorant Garamond', 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
   --font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
-  --content-width: 42rem;
+  --content-width: 54rem;
   --illustration-width: 68rem;
   --page-gutter: clamp(1.25rem, 5vw, 4rem);
 }

@@ -36,15 +36,28 @@
 .table-of-contents__number, .eyebrow { color: var(--color-muted); font-family: var(--font-sans); font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; }
 .start-reading { font-family: var(--font-sans); font-weight: 700; }
 
-.chapter { max-width: var(--illustration-width); margin: 0 auto; }
+.chapter {
+  max-width: var(--illustration-width);
+  margin: 0 auto;
+  font-family: var(--font-body);
+  font-size: clamp(1.25rem, 1rem + .5vw, 1.5rem);
+  line-height: 1.55;
+}
+.chapter h1, .chapter__content h2, .chapter__content h3,
+.chapter__content h4, .chapter__content h5, .chapter__content h6 {
+  font-family: var(--font-body);
+  font-weight: 600;
+}
+.chapter__content strong, .chapter__content b { font-weight: 600; }
 .chapter__header, .chapter__content > :not(.illustration), .chapter-navigation { max-width: var(--content-width); margin-right: auto; margin-left: auto; }
 .chapter__header { margin-bottom: 4rem; }
 .chapter__header h1 { margin: 0.5rem 0 1.5rem; font-size: clamp(2.8rem, 8vw, 5.5rem); }
 .chapter__description { margin: 0; }
 .chapter__content > * { margin-top: 0; margin-bottom: 1.75rem; }
-.chapter__content h2, .chapter__content h3 { font-family: var(--font-sans); line-height: 1.15; }
-.chapter__content h2 { margin-top: 3.5rem; font-size: 1.75rem; }
-.chapter__content h3 { margin-top: 2.5rem; font-size: 1.25rem; }
+/* Manuscript headings have their own scale, separate from the page title. */
+.chapter__content h1 { margin-top: 2.5rem; font-size: clamp(2.25rem, 5vw, 3.75rem); line-height: 1.08; letter-spacing: -.025em; }
+.chapter__content h2 { margin-top: 3rem; font-size: clamp(1.75rem, 3.5vw, 2.5rem); line-height: 1.15; }
+.chapter__content h3 { margin-top: 2.25rem; font-size: clamp(1.5rem, 2.8vw, 2rem); line-height: 1.2; }
 .chapter__content blockquote { padding-left: 1.25rem; border-left: 2px solid var(--color-rule); color: var(--color-muted); }
 
 .illustration { width: 100%; margin: 3.5rem 0; }
@@ -57,7 +70,9 @@
 .chapter-navigation__links > :last-child { text-align: right; }
 
 .part-overview {
-  width: min(100% - (var(--page-gutter) * 2), 58rem);
+  width: min(100% - (var(--page-gutter) * 2), var(--content-width));
+  font-size: clamp(1.25rem, 1rem + .5vw, 1.5rem);
+  line-height: 1.55;
   margin: 0 auto;
   padding: clamp(4rem, 10vw, 8rem) 0;
 }
